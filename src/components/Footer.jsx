@@ -12,7 +12,7 @@ export function Footer() {
   };
 
   return (
-    <footer className="bg-gradient-to-b from-[#F5E6D3] via-[#F0DCC8] to-[#E8D4C0] py-16 px-6 border-t border-white/30">
+    <footer className="bg-linear-to-b from-[#F5E6D3] via-[#F0DCC8] to-[#E8D4C0] py-16 px-6 border-t border-white/30">
       <div className="max-w-[1400px] mx-auto">
         <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-12 mb-12">
           <motion.div 

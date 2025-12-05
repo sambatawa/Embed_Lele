@@ -1,5 +1,3 @@
-// First, let's create a ProductModal component
-
 'use client';
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -145,7 +143,7 @@ export const ProductModal = React.memo(function ProductModal({ isOpen, onClose }
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 bg-gradient-to-br from-[#F5E6D3]/20 via-[#F0DCC8]/20 to-[#E8D4C0]/20 backdrop-blur-md z-50 flex items-center justify-center p-4"
+        className="fixed inset-0 bg-linear-to-br from-[#F5E6D3]/20 via-[#F0DCC8]/20 to-[#E8D4C0]/20 backdrop-blur-md z-50 flex items-center justify-center p-4"
         onClick={onClose}
       >
         <motion.div
@@ -168,7 +166,7 @@ export const ProductModal = React.memo(function ProductModal({ isOpen, onClose }
           <div className="p-6">
             <div className="grid md:grid-cols-2 gap-8">
               <div className="space-y-4">
-                <div className="aspect-square bg-gradient-to-br from-[#F5E6D3]/80 to-[#E8D4C0]/80 backdrop-blur-sm rounded-2xl overflow-hidden border border-white/30">
+                <div className="aspect-square bg-linear-to-br from-[#F5E6D3]/80 to-[#E8D4C0]/80 backdrop-blur-sm rounded-2xl overflow-hidden border border-white/30">
                   <img 
                     src={product.image} 
                     alt={product.name}
@@ -178,7 +176,7 @@ export const ProductModal = React.memo(function ProductModal({ isOpen, onClose }
                     }}
                   />
                 </div>
-                <div className="backdrop-blur-md bg-gradient-to-r from-[#D4A574]/90 to-[#C19A6B]/90 text-white p-4 rounded-2xl border border-white/20">
+                <div className="backdrop-blur-md bg-linear-to-r from-[#D4A574]/90 to-[#C19A6B]/90 text-white p-4 rounded-2xl border border-white/20">
                   <p className="text-sm opacity-90">Harga</p>
                   <p className="text-3xl font-bold">{product.price}</p>
                 </div>
@@ -196,10 +194,10 @@ export const ProductModal = React.memo(function ProductModal({ isOpen, onClose }
                           const [label, value] = spec.split(': ');
                           return (
                             <tr key={index} className="border-b border-white/30 last:border-b-0">
-                              <td className="px-4 py-3 text-sm font-medium text-gray-900 bg-gradient-to-r from-[#F5E6D3]/50 to-[#E8D4C0]/50 backdrop-blur-sm w-2/5 border-r border-white/30">
+                              <td className="px-4 py-3 text-sm font-medium text-gray-900 bg-linear-to-r from-[#F5E6D3]/50 to-[#E8D4C0]/50 backdrop-blur-sm w-2/5 border-r border-white/30">
                                 {label}
                               </td>
-                              <td className="px-4 py-3 text-sm text-gray-600 bg-gradient-to-r from-[#F5E6D3]/30 to-[#E8D4C0]/30 backdrop-blur-sm w-3/5">
+                              <td className="px-4 py-3 text-sm text-gray-600 bg-linear-to-r from-[#F5E6D3]/30 to-[#E8D4C0]/30 backdrop-blur-sm w-3/5">
                                 {value}
                               </td>
                             </tr>
@@ -217,7 +215,7 @@ export const ProductModal = React.memo(function ProductModal({ isOpen, onClose }
                   <ol className="space-y-2">
                     {product.orderingSteps.map((step, index) => (
                       <li key={index} className="flex items-start gap-3">
-                        <span className="w-6 h-6 bg-[#D4A574] text-white rounded-full flex items-center justify-center text-sm font-medium flex-shrink-0">
+                        <span className="w-6 h-6 bg-[#D4A574] text-white rounded-full flex items-center justify-center text-sm font-medium shrink-0">
                           {index + 1}
                         </span>
                         <span className="text-gray-600">{step}</span>

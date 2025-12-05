@@ -112,7 +112,6 @@ export function Product() {
                   </motion.button>
                 </motion.div>
               </motion.div>
-              {/* Dynamic Content Area */}
               <motion.div 
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -121,10 +120,9 @@ export function Product() {
                 className="bg-white rounded-[32px] overflow-hidden shadow-xl"
               >
                 {!showDetails ? (
-                  // Show image by default
                   <motion.div
                     whileHover={{ scale: 1.02 }}
-                    className="bg-gradient-to-br from-gray-100 via-gray-150 to-gray-200 rounded-[32px] overflow-hidden aspect-video cursor-pointer shadow-lg hover:shadow-2xl transition-shadow duration-500"
+                    className="bg-linear-to-br from-gray-100 via-gray-150 to-gray-200 rounded-[32px] overflow-hidden aspect-video cursor-pointer shadow-lg hover:shadow-2xl transition-shadow duration-500"
                   >
                     <ImageWithFallback
                       src="/2.png"
@@ -133,11 +131,10 @@ export function Product() {
                     />
                   </motion.div>
                 ) : (
-                  // Show product details when More Info is clicked
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="p-6 h-full bg-gradient-to-br from-gray-50 to-white"
+                    className="p-6 h-full bg-linear-to-br from-gray-50 to-white"
                   >
                     <motion.button
                       whileHover={{ scale: 1.05 }}
@@ -150,7 +147,6 @@ export function Product() {
                       </svg>
                     </motion.button>
 
-                    {/* Tab Navigation */}
                     <div className="flex gap-2 mb-6 p-1 bg-gray-100 rounded-xl">
                       {[
                         { id: 'detail', label: 'Detail Produk', icon: Package },
@@ -174,7 +170,6 @@ export function Product() {
                       ))}
                     </div>
 
-                    {/* Tab Content */}
                     <div className="min-h-[320px]">
                       {activeTab === 'detail' && (
                         <motion.div
@@ -199,7 +194,7 @@ export function Product() {
                               transition={{ delay: 0.1 * index }}
                               className="flex gap-3 p-3 bg-gray-50 rounded-lg"
                             >
-                              <div className="w-6 h-6 bg-[#D4A574] text-white rounded-full flex items-center justify-center font-bold text-xs flex-shrink-0">
+                              <div className="w-6 h-6 bg-[#D4A574] text-white rounded-full flex items-center justify-center font-bold text-xs shrink-0">
                                 {item.step}
                               </div>
                               <div>
@@ -236,7 +231,7 @@ export function Product() {
                                 whileHover={{ scale: 1.05, y: -2 }}
                                 className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-all"
                               >
-                                <div className={`w-10 h-10 bg-gradient-to-br ${item.color} rounded-lg flex items-center justify-center mb-3 shadow-md`}>
+                                <div className={`w-10 h-10 bg-linear-to-br ${item.color} rounded-lg flex items-center justify-center mb-3 shadow-md`}>
                                   <span className="text-lg">{item.icon}</span>
                                 </div>
                                 <h5 className="text-xs text-gray-600 font-medium mb-1">{item.param}</h5>
@@ -270,7 +265,7 @@ export function Product() {
                               transition={{ delay: 0.1 * index }}
                               className="flex gap-3 p-3 bg-gray-50 rounded-lg"
                             >
-                              <div className="w-6 h-6 bg-[#D4A574] text-white rounded-full flex items-center justify-center font-bold text-xs flex-shrink-0">
+                              <div className="w-6 h-6 bg-[#D4A574] text-white rounded-full flex items-center justify-center font-bold text-xs shrink-0">
                                 {item.step}
                               </div>
                               <div>
