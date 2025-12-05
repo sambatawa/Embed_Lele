@@ -1,19 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import MidtransClient from 'midtrans-client';
 
-// Initialize Midtrans client
 const midtransClient = new MidtransClient.Snap({
-  isProduction: false, // Set to true for production
+  isProduction: false,
   serverKey: process.env.MIDTRANS_SERVER_KEY || 'YOUR_MIDTRANS_SERVER_KEY',
   clientKey: process.env.MIDTRANS_CLIENT_KEY || 'YOUR_MIDTRANS_CLIENT_KEY'
 });
 
-export async function POST(request: NextRequest) {
+export async function POST(request) {
   try {
     const body = await request.json();
     const { customerDetails, itemDetails } = body;
 
-    // Validate required fields
     if (!customerDetails?.firstName || !customerDetails?.email || !customerDetails?.phone) {
       return NextResponse.json(
         { success: false, error: 'Missing required customer details' },
@@ -21,11 +19,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create transaction parameters
     const parameter = {
       transaction_details: {
         order_id: 'NUTRIMIX-' + Date.now(),
-        gross_amount: itemDetails.price,
+        gross_amount: itemDetails.price, 
       },
       item_details: [{
         id: itemDetails.id,
@@ -54,21 +51,15 @@ export async function POST(request: NextRequest) {
       enabled_payments: [
         'gopay',
         'dana', 
-        'qris',
-        'shopeepay',
-        'bank_transfer',
-        'credit_card'
+        'qris'
       ],
       callbacks: {
-        finish: `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/payment/success`,
-        error: `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/payment/error`,
-        pending: `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/payment/pending`
+        finish: `${process.env.NEXT_PUBLIC_BASE_URL}/payment/success`,
+        error: `${process.env.NEXT_PUBLIC_BASE_URL}/payment/error`,
+        pending: `${process.env.NEXT_PUBLIC_BASE_URL}/payment/pending`
       }
     };
-
-    // Create transaction
     const transaction = await midtransClient.createTransaction(parameter);
-    
     return NextResponse.json({
       success: true,
       snapToken: transaction.token,
