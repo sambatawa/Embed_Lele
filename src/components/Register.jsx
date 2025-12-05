@@ -92,7 +92,7 @@ export function RegisterPage() {
             <div className="relative">
               <div className="absolute inset-0 bg-gradient-to-br from-[#C17A4F]/20 to-[#D4A574]/20 rounded-3xl blur-2xl" />
               <img
-                src="https://images.unsplash.com/photo-1618044733300-9472054094ee?w=800&q=80"
+                src="1.png"
                 alt="Workspace"
                 className="relative rounded-3xl shadow-2xl w-full h-[500px] object-cover"
               />
@@ -251,6 +251,26 @@ export function RegisterPage() {
                 >
                   {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </motion.button>
+              </div>
+            </motion.div>
+
+                        <motion.div
+              initial={{ x: -20, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              transition={{ delay: 0.6 }}
+            >
+              <label className="block text-gray-700 mb-2">Kode unik</label>
+              <div className="relative group">
+                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-[#D4A574] transition-colors" />
+                <motion.input
+                  whileFocus={{ scale: 1.01 }}
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Kode unik yang ada di alat"
+                  className="w-full pl-12 pr-4 py-3 bg-white border border-gray-200 rounded-xl focus:border-[#D4A574] focus:ring-4 focus:ring-[#D4A574]/10 transition-all outline-none"
+                  required
+                />
               </div>
             </motion.div>
 

@@ -94,7 +94,7 @@ export function Product() {
                     className="px-8 py-3 border-2 border-gray-900 text-gray-900 hover:bg-gray-900 hover:text-white transition-all text-sm tracking-wide rounded-lg"
                     onClick={() => setIsModalOpen(true)}
                   >
-                    BUY NOW
+                    BELI SINI
                   </motion.button>
                   <motion.button 
                     whileHover={{ scale: 1.05, x: 5 }}
