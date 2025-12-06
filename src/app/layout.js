@@ -1,26 +1,25 @@
-import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
+const geistSans = {
   variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
+  className: "font-sans"
+};
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+const geistMono = {
+  variable: "--font-geist-mono", 
+  className: "font-mono"
+};
 
 export const metadata = {
-  title: "Lele Kita",
-  description: "G2 Punya alat Lele, Welcome to our Web Bro and Sis",
+  title: "Nutrimix",
+  description: "Nutrimix ALat pakan Lele, Welcome to our Web Bro and Sis",
 };
 
 export default function RootLayout({ children }) {
   return (
     <html lang="id">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+        className={`${geistSans.variable} ${geistMono.variable} ${geistSans.className} ${geistMono.className} antialiased`}>
         {children}
       </body>
     </html>

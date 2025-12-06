@@ -1,128 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
 import MidtransClient from 'midtrans-client';
-import { db } from "@/lib/firebase";
-import { ref, get, remove, set } from "firebase/database";
 
+// Midtrans Configuration
 const midtransClient = new MidtransClient.Snap({
   isProduction: false,
-  serverKey: process.env.MIDTRANS_SERVER_KEY || 'YOUR_MIDTRANS_SERVER_KEY',
-  clientKey: process.env.MIDTRANS_CLIENT_KEY || 'YOUR_MIDTRANS_CLIENT_KEY'
+  serverKey: process.env.MIDTRANS_SERVER_KEY || 'SB-Mid-server-YOUR_SERVER_KEY',
+  clientKey: process.env.MIDTRANS_CLIENT_KEY || 'SB-Mid-client-YOUR_CLIENT_KEY'
 });
 
-// Verify Email API
-export async function POST(req) {
-  const contentType = req.headers.get("content-type") || "";
-  if (!contentType.includes("application/json")) {
-    return NextResponse.json(
-      { message: "Content-Type harus application/json", success: false },
-      { status: 400 }
-    );
-  }
-
-  let body;
-  try {
-    body = await req.json();
-  } catch {
-    return NextResponse.json(
-      { message: "JSON tidak valid", success: false },
-      { status: 400 }
-    );
-  }
-
-  const { token, email } = body;
-  if (!token || !email) {
-    return NextResponse.json(
-      { message: "Token dan email wajib diisi", success: false },
-      { status: 400 }
-    );
-  }
-
-  try {
-    // Cek pending user di Firebase
-    const pendingUserRef = ref(db, 'pending_users/' + email.replace(/[^a-zA-Z0-9]/g, '_'));
-    const pendingUserSnapshot = await get(pendingUserRef);
-    
-    if (!pendingUserSnapshot.exists()) {
-      return NextResponse.json(
-        { message: "Data registrasi tidak ditemukan atau sudah kadaluarsa", success: false },
-        { status: 400 }
-      );
-    }
-
-    const pendingUserData = pendingUserSnapshot.val();
-    const currentTime = new Date().toISOString();
-    
-    // Cek expired
-    if (currentTime > pendingUserData.expiresAt) {
-      await remove(pendingUserRef);
-      return NextResponse.json(
-        { message: "Link verifikasi sudah kadaluarsa. Silakan registrasi kembali.", success: false },
-        { status: 400 }
-      );
-    }
-
-    // Cek token match
-    if (pendingUserData.verificationToken !== token) {
-      return NextResponse.json(
-        { message: "Token verifikasi tidak valid", success: false },
-        { status: 400 }
-      );
-    }
-
-    // Token valid - simpan user ke database utama
-    const userRef = ref(db, 'users/' + email.replace(/[^a-zA-Z0-9]/g, '_'));
-    
-    // Generate referral code
-    const generateReferralCode = (name) => {
-      const cleanName = name.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
-      const random = Math.random().toString(36).substring(2, 6).toUpperCase();
-      return cleanName.slice(0, 4) + random;
-    };
-    
-    const referralCode = generateReferralCode(pendingUserData.name);
-    
-    const userData = {
-      name: pendingUserData.name,
-      email: pendingUserData.email,
-      password: pendingUserData.password || '',
-      deviceCode: pendingUserData.deviceCode || 'Nutrimix1',
-      referralCode: referralCode,
-      createdAt: new Date().toISOString(),
-      isActive: true,
-      emailVerified: true
-    };
-    
-    await set(userRef, userData);
-    
-    // Hapus data pending
-    await remove(pendingUserRef);
-    
-    console.log("User registered successfully:", userData.email);
-    
-    return NextResponse.json({ 
-      message: "Email berhasil diverifikasi dan akun telah dibuat.", 
-      success: true,
-      userData: {
-        name: userData.name,
-        email: userData.email,
-        referralCode: userData.referralCode
-      }
-    });
-
-  } catch (error) {
-    console.error("Email verification error:", error);
-    return NextResponse.json(
-      { message: "Terjadi kesalahan saat verifikasi email", success: false },
-      { status: 500 }
-    );
-  }
-}
-
+// Payment API - Create Transaction
 export async function POST(request) {
   try {
     const body = await request.json();
     const { customerDetails, itemDetails } = body;
 
+    // Validation
     if (!customerDetails?.firstName || !customerDetails?.email || !customerDetails?.phone) {
       return NextResponse.json(
         { success: false, error: 'Missing required customer details' },
@@ -130,9 +22,20 @@ export async function POST(request) {
       );
     }
 
+    if (!itemDetails?.id || !itemDetails?.name || !itemDetails?.price) {
+      return NextResponse.json(
+        { success: false, error: 'Missing required item details' },
+        { status: 400 }
+      );
+    }
+
+    // Generate unique order ID
+    const orderId = 'NUTRIMIX-' + Date.now() + '-' + Math.random().toString(36).substring(2, 9);
+
+    // Midtrans transaction parameters
     const parameter = {
       transaction_details: {
-        order_id: 'NUTRIMIX-' + Date.now(),
+        order_id: orderId,
         gross_amount: itemDetails.price, 
       },
       item_details: [{
@@ -141,7 +44,8 @@ export async function POST(request) {
         quantity: itemDetails.quantity || 1,
         name: itemDetails.name,
         brand: 'Nutrimix',
-        category: 'Machinery'
+        category: 'Machinery',
+        url: process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
       }],
       customer_details: {
         first_name: customerDetails.firstName,
@@ -156,26 +60,64 @@ export async function POST(request) {
           address: customerDetails.address || '',
           city: customerDetails.city || '',
           postal_code: customerDetails.postalCode || '',
-          country: customerDetails.country || 'Indonesia'
+          country_code: 'IDN'
+        },
+        shipping_address: {
+          first_name: customerDetails.firstName,
+          last_name: customerDetails.lastName || '',
+          email: customerDetails.email,
+          phone: customerDetails.phone,
+          address: customerDetails.address || '',
+          city: customerDetails.city || '',
+          postal_code: customerDetails.postalCode || '',
+          country_code: 'IDN'
         }
       },
       enabled_payments: [
+        'credit_card',
         'gopay',
+        'shopeepay',
         'dana', 
-        'qris'
+        'qris',
+        'bca_va',
+        'bni_va',
+        'bri_va',
+        'cimb_va',
+        'permata_va',
+        'other_va'
       ],
       callbacks: {
         finish: `${process.env.NEXT_PUBLIC_BASE_URL}/payment/success`,
         error: `${process.env.NEXT_PUBLIC_BASE_URL}/payment/error`,
         pending: `${process.env.NEXT_PUBLIC_BASE_URL}/payment/pending`
-      }
+      },
+      expiry: {
+        unit: 'hours',
+        duration: 24
+      },
+      custom_field1: customerDetails.email,
+      custom_field2: 'Nutrimix Product Purchase',
+      custom_field3: new Date().toISOString()
     };
+
+    // Create transaction
     const transaction = await midtransClient.createTransaction(parameter);
+    
+    // Log transaction for tracking
+    console.log('Transaction created:', {
+      orderId,
+      email: customerDetails.email,
+      amount: itemDetails.price,
+      snapToken: transaction.token
+    });
+
     return NextResponse.json({
       success: true,
       snapToken: transaction.token,
       redirectUrl: transaction.redirect_url,
-      orderId: parameter.transaction_details.order_id
+      orderId: orderId,
+      grossAmount: itemDetails.price,
+      customerEmail: customerDetails.email
     });
 
   } catch (error) {
@@ -183,8 +125,43 @@ export async function POST(request) {
     return NextResponse.json(
       { 
         success: false, 
-        error: error.message || 'Failed to create payment transaction' 
+        error: error.message || 'Failed to create payment transaction',
+        details: process.env.NODE_ENV === 'development' ? error.stack : undefined
       },
+      { status: 500 }
+    );
+  }
+}
+
+// Handle payment notification (webhook)
+export async function POST_NOTIFICATION(request) {
+  try {
+    const body = await request.json();
+    
+    // Verify notification signature (optional but recommended)
+    const notificationSignature = request.headers.get('x-callback-signature');
+    
+    // Process the notification based on transaction status
+    const { order_id, transaction_status, fraud_status } = body;
+    
+    console.log('Payment notification received:', {
+      orderId: order_id,
+      status: transaction_status,
+      fraud: fraud_status
+    });
+    
+    // Here you can:
+    // 1. Update order status in database
+    // 2. Send confirmation email to customer
+    // 3. Trigger shipping process
+    // 4. Update inventory
+    
+    return NextResponse.json({ success: true });
+    
+  } catch (error) {
+    console.error('Payment notification error:', error);
+    return NextResponse.json(
+      { success: false, error: 'Failed to process notification' },
       { status: 500 }
     );
   }

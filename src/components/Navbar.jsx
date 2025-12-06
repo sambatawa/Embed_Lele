@@ -41,16 +41,21 @@ export function Navbar() {
               { name: 'Beranda', href: '#hero' },
               { name: 'Produk', href: '#products' },
               { name: 'FAQ', href: '#faq' },
-              { name: 'Tim', href: '#members' }
+              { name: 'Tim', href: '#members' },
+              { name: 'Hubungi', href: '#contact'}
             ].map((item, index) => (
               <motion.a
                 key={item.name}
                 href={item.href}
                 onClick={(e) => {
                   e.preventDefault();
-                  const element = document.querySelector(item.href);
-                  if (element) {
-                    element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                  if (item.href.startsWith('#')) {
+                    const element = document.querySelector(item.href);
+                    if (element) {
+                      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                  } else {
+                    router.push(item.href);
                   }
                 }}
                 initial={{ opacity: 0, y: -10 }}
@@ -124,16 +129,21 @@ export function Navbar() {
                 { name: 'Beranda', href: '#hero' },
                 { name: 'Produk', href: '#products' },
                 { name: 'FAQ', href: '#faq' },
-                { name: 'Tim', href: '#members' }
+                { name: 'Tim', href: '#members' },
+                { name: 'Hubungi', href: '#contact'}
               ].map((item, index) => (
                 <motion.a
                   key={item.name}
                   href={item.href}
                   onClick={(e) => {
                     e.preventDefault();
-                    const element = document.querySelector(item.href);
-                    if (element) {
-                      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    if (item.href.startsWith('#')) {
+                      const element = document.querySelector(item.href);
+                      if (element) {
+                        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                      }
+                    } else {
+                      router.push(item.href);
                     }
                     setIsMobileMenuOpen(false);
                   }}

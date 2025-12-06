@@ -91,27 +91,13 @@ export const ProductModal = React.memo(function ProductModal({ isOpen, onClose }
         throw new Error(result.error || 'Payment processing failed');
       }
       
+      // Open Midtrans Snap payment popup
       if (window.snap) {
         window.snap.pay(result.snapToken, {
-          onSuccess: function(paymentResult) {
-            console.log('Payment success:', paymentResult);
-            setIsProcessing(false);
-            window.location.href = '/payment/success?order_id=' + paymentResult.order_id;
-          },
-          onPending: function(paymentResult) {
-            console.log('Payment pending:', paymentResult);
-            setIsProcessing(false);
-            alert('Pembayaran sedang diproses. Silakan cek status pembayaran Anda.');
-          },
-          onError: function(paymentResult) {
-            console.log('Payment error:', paymentResult);
-            setIsProcessing(false);
-            alert('Pembayaran gagal. Silakan coba lagi atau hubungi kami.');
-          },
-          onClose: function() {
-            setIsProcessing(false);
-            console.log('Customer closed the popup without finishing the payment');
-          }
+          onSuccess: window.snapCallback.onSuccess,
+          onPending: window.snapCallback.onPending,
+          onError: window.snapCallback.onError,
+          onClose: window.snapCallback.onClose
         });
       } else {
         throw new Error('Midtrans Snap not loaded');
@@ -127,13 +113,42 @@ export const ProductModal = React.memo(function ProductModal({ isOpen, onClose }
   useEffect(() => {
     const script = document.createElement('script');
     script.src = 'https://app.sandbox.midtrans.com/snap/snap.js';
-    script.setAttribute('data-client-key', 'YOUR_MIDTRANS_CLIENT_KEY');
+    script.setAttribute('data-client-key', process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY || 'SB-Mid-client-YOUR_CLIENT_KEY');
+    script.async = true;
     document.body.appendChild(script);
 
-    return () => {
-      document.body.removeChild(script);
+    // Set global callback for Midtrans
+    window.snapCallback = {
+      onSuccess: function(result) {
+        console.log('Payment success:', result);
+        setIsProcessing(false);
+        // You can redirect to success page or show success modal
+        alert('Pembayaran berhasil! Terima kasih atas pesanan Anda.');
+        onClose();
+      },
+      onPending: function(result) {
+        console.log('Payment pending:', result);
+        setIsProcessing(false);
+        alert('Pembayaran sedang diproses. Silakan lanjutkan pembayaran.');
+      },
+      onError: function(result) {
+        console.log('Payment error:', result);
+        setIsProcessing(false);
+        alert('Pembayaran gagal. Silakan coba lagi.');
+      },
+      onClose: function() {
+        setIsProcessing(false);
+        console.log('Customer closed the popup without finishing the payment');
+      }
     };
-  }, []);
+
+    return () => {
+      if (document.body.contains(script)) {
+        document.body.removeChild(script);
+      }
+      delete window.snapCallback;
+    };
+  }, [onClose]);
 
   if (!isOpen) return null;
 
@@ -257,6 +272,137 @@ export const ProductModal = React.memo(function ProductModal({ isOpen, onClose }
               </div>
             </div>
           </div>
+
+          {/* Customer Form Modal */}
+          <AnimatePresence>
+            {showCustomerForm && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+                onClick={() => setShowCustomerForm(false)}
+              >
+                <motion.div
+                  initial={{ scale: 0.9, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0.9, opacity: 0 }}
+                  className="bg-white rounded-2xl max-w-md w-full max-h-[90vh] overflow-y-auto p-6 shadow-2xl"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div className="flex items-center justify-between mb-6">
+                    <h3 className="text-xl font-bold text-gray-900">Data Pembeli</h3>
+                    <button
+                      onClick={() => setShowCustomerForm(false)}
+                      className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                    >
+                      <X className="w-5 h-5 text-gray-500" />
+                    </button>
+                  </div>
+
+                  <form onSubmit={(e) => { e.preventDefault(); handlePayment(); }} className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Nama Deppan *</label>
+                        <input
+                          type="text"
+                          value={customerData.firstName}
+                          onChange={(e) => setCustomerData(prev => ({ ...prev, firstName: e.target.value }))}
+                          className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#D4A574] focus:border-transparent ${
+                            formErrors.firstName ? 'border-red-500' : 'border-gray-300'
+                          }`}
+                          placeholder="John"
+                        />
+                        {formErrors.firstName && <p className="text-red-500 text-xs mt-1">{formErrors.firstName}</p>}
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Nama Belakang</label>
+                        <input
+                          type="text"
+                          value={customerData.lastName}
+                          onChange={(e) => setCustomerData(prev => ({ ...prev, lastName: e.target.value }))}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#D4A574] focus:border-transparent"
+                          placeholder="Doe"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Email *</label>
+                      <input
+                        type="email"
+                        value={customerData.email}
+                        onChange={(e) => setCustomerData(prev => ({ ...prev, email: e.target.value }))}
+                        className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#D4A574] focus:border-transparent ${
+                          formErrors.email ? 'border-red-500' : 'border-gray-300'
+                        }`}
+                        placeholder="john@example.com"
+                      />
+                      {formErrors.email && <p className="text-red-500 text-xs mt-1">{formErrors.email}</p>}
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Nomor Telepon *</label>
+                      <input
+                        type="tel"
+                        value={customerData.phone}
+                        onChange={(e) => setCustomerData(prev => ({ ...prev, phone: e.target.value }))}
+                        className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#D4A574] focus:border-transparent ${
+                          formErrors.phone ? 'border-red-500' : 'border-gray-300'
+                        }`}
+                        placeholder="08123456789"
+                      />
+                      {formErrors.phone && <p className="text-red-500 text-xs mt-1">{formErrors.phone}</p>}
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Alamat Lengkap</label>
+                      <textarea
+                        value={customerData.address}
+                        onChange={(e) => setCustomerData(prev => ({ ...prev, address: e.target.value }))}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#D4A574] focus:border-transparent"
+                        rows={2}
+                        placeholder="Jl. Contoh No. 123, RT/RW 001/002"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Kota</label>
+                        <input
+                          type="text"
+                          value={customerData.city}
+                          onChange={(e) => setCustomerData(prev => ({ ...prev, city: e.target.value }))}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#D4A574] focus:border-transparent"
+                          placeholder="Jakarta"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Kode Pos</label>
+                        <input
+                          type="text"
+                          value={customerData.postalCode}
+                          onChange={(e) => setCustomerData(prev => ({ ...prev, postalCode: e.target.value }))}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#D4A574] focus:border-transparent"
+                          placeholder="12345"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="pt-4">
+                      <button
+                        type="submit"
+                        disabled={isProcessing}
+                        className="w-full bg-gradient-to-r from-[#D4A574] to-[#C17A4F] text-white py-3 px-4 rounded-lg font-semibold hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {isProcessing ? 'Memproses Pembayaran...' : `Bayar ${product.price}`}
+                      </button>
+                    </div>
+                  </form>
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </motion.div>
       </motion.div>
     </AnimatePresence>
