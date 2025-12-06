@@ -223,7 +223,7 @@ export function RegisterPage() {
           initial={{ opacity: 0, x: -50 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.8 }}
-          className="hidden lg:flex flex-col justify-center items-center p-12 bg-white/10 backdrop-blur-3xl rounded-3xl border border-white/20 shadow-2xl"
+          className="lg:flex flex-col justify-center items-center p-12 bg-white/10 backdrop-blur-3xl rounded-3xl border border-white/20 shadow-2xl"
         >
           <motion.div
             initial={{ scale: 0.8, opacity: 0 }}
