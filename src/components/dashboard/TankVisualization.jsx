@@ -79,8 +79,6 @@ function TankFillingPage({ isVisible, onClose, formulaName, maxCapacity = 100, t
     };
   }, [isVisible, startProcessing]);
 
-  if (!mounted || !isVisible) return null;
-
   const getFillStyle = (level) => {
     const blueGradient = 'linear-gradient(to top, #3b82f6 50%, #60a5fa 100%)'; 
     const yellowGradient = 'linear-gradient(to top, #f59e0b 50%, #fcd34d 100%)'; 
@@ -213,7 +211,7 @@ function TankFillingPage({ isVisible, onClose, formulaName, maxCapacity = 100, t
                   </div>
                   <div className="bg-white/20 backdrop-blur-md p-3 rounded-lg border border-white/30 shadow-inner">
                       <p className="text-sm text-[#7d6f66] font-semibold">
-                          Progress: **{currentLevel.toFixed(1)}%**
+                          Progress: {currentLevel.toFixed(1)}%
                       </p>
                       <p className="text-xs text-gray-500 mt-1">
                           Level Cairan: {((currentLevel / 100) * totalWeight).toFixed(2)} / {totalWeight.toFixed(2)} gram

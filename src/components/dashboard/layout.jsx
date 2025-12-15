@@ -5,9 +5,9 @@ import { useRouter } from "next/navigation";
 import Sidebar from "@/components/dashboard/Sidebar";
 
 export default function DashboardLayout({ children }) {
+  const router = useRouter();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const router = useRouter();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -31,20 +31,26 @@ export default function DashboardLayout({ children }) {
     checkAuth();
   }, [router, mounted]);
 
+  // Render loading state
+  const renderLoading = () => (
+    <div className="min-h-screen bg-linear-to-br from-[#F5F0EB] via-[#F8F4EF] to-[#FAF6F1] flex items-center justify-center">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#D4A574]"></div>
+    </div>
+  );
+
+  // Render unauthorized state
+  const renderUnauthorized = () => (
+    <div className="min-h-screen bg-linear-to-br from-[#F5F0EB] via-[#F8F4EF] to-[#FAF6F1] flex items-center justify-center">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#D4A574]"></div>
+    </div>
+  );
+
   if (isLoading) {
-    return (
-      <div className="min-h-screen bg-linear-to-br from-[#F5F0EB] via-[#F8F4EF] to-[#FAF6F1] flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#D4A574]"></div>
-      </div>
-    );
+    return renderLoading();
   }
 
   if (!isAuthenticated) {
-    return (
-      <div className="min-h-screen bg-linear-to-br from-[#F5F0EB] via-[#F8F4EF] to-[#FAF6F1] flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#D4A574]"></div>
-      </div>
-    );
+    return renderUnauthorized();
   }
 
   return (

@@ -14,7 +14,6 @@ export default function AdminDashboard() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedFilter, setSelectedFilter] = useState('all');
 
-  // Sample data
   const [stats, setStats] = useState({
     totalUsers: 0,
     totalOrders: 0,

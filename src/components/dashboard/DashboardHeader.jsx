@@ -5,12 +5,12 @@ import { useRouter } from "next/navigation";
 import { db, ref, get, query, orderByChild, equalTo } from '@/lib/firebase';
 
 export default function DashboardHeader() {
+  const router = useRouter();
   const [time, setTime] = useState(new Date());
-  const [mounted, setMounted] = useState(false); // track if component mounted
+  const [mounted, setMounted] = useState(false); 
   const [userEmail, setUserEmail] = useState('');
   const [userName, setUserName] = useState('Pengguna');
   const [userRole, setUserRole] = useState('');
-  const router = useRouter();
 
   useEffect(() => {
     setMounted(true); 
@@ -65,8 +65,6 @@ export default function DashboardHeader() {
     router.push('/login');
   };
 
-  if (!mounted) return null; 
-
   const formattedTime = time.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 
   const formattedDate = time.toLocaleDateString("id-ID", {
@@ -81,6 +79,8 @@ export default function DashboardHeader() {
   if (hour >= 4 && hour < 11) greeting = "Pagi";
   else if (hour >= 11 && hour < 15) greeting = "Siang";
   else if (hour >= 15 && hour < 18) greeting = "Sore";
+
+  if (!mounted) return null;
 
   return (
     <div className="w-full bg-linear-to-r mb-4 from-[#FFF1E5] to-[#FFE8D1] rounded-2xl p-4 flex flex-row justify-between items-center shadow-md font-sans border border-[#EDE6DF]/50">

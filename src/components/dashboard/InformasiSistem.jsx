@@ -15,13 +15,19 @@ export default function InformasiSistem({
   onSelect = () => {},
   overallDistribution = null,
 }) {
-  const formulaNames = formulas.map(f => typeof f === 'string' ? f : f.name);
-  const initial = selected || (formulaNames.length ? formulaNames[0] : "");
-  const [current, setCurrent] = useState(initial);
+  const [current, setCurrent] = useState(() => {
+    const formulaNames = formulas.map(f => typeof f === 'string' ? f : f.name);
+    return selected || (formulaNames.length ? formulaNames[0] : "");
+  });
 
   useEffect(() => {
     if (selected && selected !== current) setCurrent(selected);
   }, [selected]);
+
+  const formulaNames = useMemo(() => 
+    formulas.map(f => typeof f === 'string' ? f : f.name),
+    [formulas]
+  );
 
   const handleChange = (name) => {
     setCurrent(name);
@@ -129,45 +135,6 @@ export default function InformasiSistem({
     [doughnutLabels]
   );
 
-  const radarSeries = useMemo(() => {
-    const nutrients = formulaData[current] || { protein: 0, fat: 0, fiber: 0 };
-    return [
-      {
-        name: current,
-        data: [
-          nutrients.protein || 0,
-          nutrients.fat || 0,
-          nutrients.fiber || 0,
-        ],
-      },
-    ];
-  }, [current, formulaData]);
-
-  const radarOptions = useMemo(
-    () => ({
-      chart: { toolbar: { show: false } },
-      xaxis: {
-        categories: ["Protein", "Fat", "Fiber"],
-        labels: { style: { fontSize: "13px", colors: "#6C5F57" } },
-      },
-
-      stroke: {
-        show: true,
-        width: 3,
-        colors: ["#059669"],
-      },
-
-      fill: { opacity: 0.25, colors: ["#10B981"] },
-
-      markers: { size: 5, colors: ["#047857"] },
-
-      yaxis: { show: false },
-      legend: { show: false },
-      tooltip: { theme: "light" },
-    }),
-    []
-  );
-
   return (
     <section className="p-4 rounded-2xl bg-transparent backdrop-blur-sm shadow-sm border border-white/20 relative overflow-hidden">
 
@@ -182,15 +149,15 @@ export default function InformasiSistem({
           <div className="mt-4 text-sm grid grid-cols-3 gap-4">
             <div className="text-center p-2 bg-white/30 rounded-lg">
               <p className="font-semibold text-[#6C5F57]">Protein</p>
-              <p className="text-[#7d6f66">{formulaData[current]?.protein || 0}g</p>
+              <p className="text-[#7d6f66]">{formulas.find(f => f.name === current)?.protein || 0}g</p>
             </div>
             <div className="text-center p-2 bg-white/30 rounded-lg">
-              <p className="font-semibold text-[#6C5F57]">Lemak</p>
-              <p className="text-[#7d6f66">{formulaData[current]?.fat || 0}g</p>
+              <p className="font-semibold text-[#6C5F57]">Berat Pelet</p>
+              <p className="text-[#7d6f66]">{formulas.find(f => f.name === current)?.berat_pelet || 0}g</p>
             </div>
             <div className="text-center p-2 bg-white/30 rounded-lg">
-              <p className="font-semibold text-[#6C5F57]">Serat</p>
-              <p className="text-[#7d6f66">{formulaData[current]?.fiber || 0}g</p>
+              <p className="font-semibold text-[#6C5F57]">Kategori</p>
+              <p className="text-[#7d6f66]">{formulas.find(f => f.name === current)?.category || '-'}</p>
             </div>
           </div>
         </div>
@@ -212,7 +179,7 @@ export default function InformasiSistem({
         <div className="w-full lg:w-[30%] flex flex-col gap-4">
           <div className="rounded-lg p-3 bg-white/20 backdrop-blur-md shadow-lg border border-white/20 hover:bg-white/30 transition-all duration-300 hover:shadow-xl hover:border-white/30">
             <h3 className="text-lg font-semibold text-[#6C5F57] mb-2">Distribusi Formula</h3>
-            <div className="h-48">
+            <div className="h-48 lg:h-[360px]">
               <Chart
                 options={doughnutOptions}
                 series={doughnutSeries}
@@ -222,22 +189,6 @@ export default function InformasiSistem({
             </div>
           </div>
 
-          <div className="rounded-lg p-3 bg-white/20 backdrop-blur-md shadow-lg border border-white/20 hover:bg-white/30 transition-all duration-300 hover:shadow-xl hover:border-white/30">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-lg font-semibold text-[#6C5F57]">Analisis Formula</h3>
-            </div>
-            <div className="h-40">
-              <Chart
-                options={radarOptions}
-                series={radarSeries}
-                type="radar"
-                height={"100%"}
-              />
-            </div>
-            <p className="text-xs text-[#6C5F57] mt-2">
-              Nutrients (per 100g) — {current}
-            </p>
-          </div>
         </div>
       </div>
     </section>

@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { useState, useEffect, createRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import FormulaCard from "@/components/dashboard/FormulaCard";
@@ -22,11 +22,11 @@ export default function DashboardPage() {
   const [modalFormula, setModalFormula] = useState("");
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
-  const [mounted, setMounted] = useState(false);
   const [loading, setLoading] = useState(true);
   const [deviceConnected, setDeviceConnected] = useState(false);
   const [deviceData, setDeviceData] = useState(null);
-  const carouselRef = createRef();
+  
+  const carouselRef = useRef(null); 
 
   const handleSelect = (f) => {
     setSelectedFormula(f);
@@ -73,7 +73,7 @@ export default function DashboardPage() {
   const scrollLeft = () => {
     if (carouselRef.current) {
       carouselRef.current.scrollBy({ left: -320, behavior: 'smooth' });
-      setTimeout(checkScrollPosition, 300);
+      setTimeout(checkScrollPosition, 300); 
     }
   };
 
@@ -85,12 +85,6 @@ export default function DashboardPage() {
   };
 
   useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  useEffect(() => {
-    if (!mounted) return;
-
     const unsubscribe = listenToDeviceData((data) => {
       setDeviceData(data);
       setDeviceConnected(true);
@@ -105,20 +99,18 @@ export default function DashboardPage() {
         unsubscribe();
       }
     };
-  }, [mounted]);
+  }, []);
 
   useEffect(() => {
-    if (!mounted) return;
-    
     const fetchFormulas = async () => {
       try {
         setLoading(true);
         const formulasData = await getAllFormulas();
         setFormulas(formulasData);
-        const biasa = formulasData.filter(f => f.category === 'biasa');
-        const hemat = formulasData.filter(f => f.category === 'hemat');
-        setBiasaFormulas(biasa);
-        setHematFormulas(hemat);
+        const manual = formulasData.filter(f => f.category === 'manual');
+        const otomatis = formulasData.filter(f => f.category === 'otomatis');
+        setBiasaFormulas(manual); 
+        setHematFormulas(otomatis); 
         if (formulasData.length > 0) {
           setSelectedFormula(formulasData[0].name);
           setModalFormula(formulasData[0].name);
@@ -131,22 +123,31 @@ export default function DashboardPage() {
     };
     
     fetchFormulas();
-  }, [mounted]);
+  }, []);
 
   useEffect(() => {
-    if (!mounted) return;
-    
+    const currentRef = carouselRef.current;
+    if (currentRef) {
+      currentRef.addEventListener('scroll', checkScrollPosition);
+    }
+
     checkScrollPosition();
     window.addEventListener('resize', checkScrollPosition);
-    return () => window.removeEventListener('resize', checkScrollPosition);
-  }, [mounted]);
+    
+    return () => {
+      window.removeEventListener('resize', checkScrollPosition);
+      if (currentRef) {
+        currentRef.removeEventListener('scroll', checkScrollPosition);
+      }
+    };
+  }, [formulas]);
 
   return (
     <div className="relative z-10">
       <DashboardHeader />
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
         <div className="p-6 rounded-2xl bg-white/30 backdrop-blur-md shadow-md border border-[#EDE6DF] space-y-4 lg:col-span-2">
-          <h3 className="text-lg font-semibold text-[#6C5F57]">Formula Biasa</h3>
+          <h3 className="text-lg font-semibold text-[#6C5F57]">Formula Manual</h3>
           <div className="relative">
             {!loading && biasaFormulas.length > 1 && canScrollLeft && (
               <motion.button
@@ -182,7 +183,6 @@ export default function DashboardPage() {
 
             <div 
               ref={carouselRef}
-              onScroll={checkScrollPosition}
               className="flex overflow-x-auto gap-4 scrollbar-hide pb-2 scroll-smooth p-2"
             >
               {loading ? (
@@ -191,15 +191,17 @@ export default function DashboardPage() {
                 </div>
               ) : biasaFormulas.length === 0 ? (
                 <div className="flex items-center justify-center w-full py-8">
-                  <p className="text-[#7d6f66]">Belum ada formula biasa</p>
+                  <p className="text-[#7d6f66]">Belum ada formula manual</p>
                 </div>
               ) : (
                 biasaFormulas.map((formula) => (
                   <div key={formula.id} className="flex shrink-0 w-80">
                     <FormulaCard
                       title={formula.name}
-                      catchphrase={formula.ingredients}
-                      data={formula}
+                      berat_pelet={formula.berat_pelet}
+                      category={formula.category}
+                      ingredients={formula.ingredients}
+                      protein={formula.protein}
                       selected={selectedFormula === formula.name}
                       onSelect={() => handleSelect(formula.name)}
                       onModal={() => handleOpenModal(formula.name)}
@@ -212,22 +214,24 @@ export default function DashboardPage() {
         </div>
 
         <div className="p-6 rounded-2xl bg-white/40 backdrop-blur-md shadow-md border border-[#EDE6DF] space-y-4">
-          <h3 className="text-lg font-semibold text-[#D4A574]">Formula Hemat</h3>
+          <h3 className="text-lg font-semibold text-[#D4A574]">Formula Otomatis</h3>
           {loading ? (
             <div className="flex items-center justify-center py-8">
               <p className="text-[#7d6f66]">Memuat formula...</p>
             </div>
           ) : hematFormulas.length === 0 ? (
             <div className="flex items-center justify-center py-8">
-              <p className="text-[#7d6f66]">Belum ada formula hemat</p>
+              <p className="text-[#7d6f66]">Belum ada formula otomatis</p>
             </div>
           ) : (
             hematFormulas.map((formula) => (
               <FormulaCard
                 key={formula.id}
                 title={formula.name}
-                catchphrase={formula.ingredients}
-                data={formula}
+                berat_pelet={formula.berat_pelet}
+                category={formula.category}
+                ingredients={formula.ingredients}
+                protein={formula.protein}
                 selected={selectedFormula === formula.name}
                 onSelect={() => handleSelect(formula.name)}
                 onModal={() => handleOpenModal(formula.name)}
@@ -248,7 +252,7 @@ export default function DashboardPage() {
             setShowTankPage(false);
           }}
           formulaName={selectedFormula}
-          totalWeight={(formulas.find(f => f.name === selectedFormula)?.total_weight || 0) * 1000}
+          totalWeight={(formulas.find(f => f.name === selectedFormula)?.berat_pelet || 0)}
           deviceData={deviceData}
           deviceConnected={deviceConnected}
         />
@@ -274,16 +278,7 @@ export default function DashboardPage() {
         show={showModal}
         onClose={() => setShowModal(false)}
         onChoose={handleChooseFormula}
-        formulaName={modalFormula}
-        ingredients={formulas.find(f => f.name === modalFormula)?.steps?.reduce((acc, step) => {
-          acc[step.material] = step.target_weight;
-          return acc;
-        }, {}) || {}}
-        nutrients={{ 
-          Protein: formulas.find(f => f.name === modalFormula)?.protein || 0, 
-          Fat: formulas.find(f => f.name === modalFormula)?.fat || 0, 
-          Fiber: formulas.find(f => f.name === modalFormula)?.fiber || 0 
-        }}
+        formulaData={formulas.find(f => f.name === modalFormula)}
       />
     </div>
   );
