@@ -101,7 +101,29 @@ export default function ManageUser() {
           <span className="ml-3 text-[#6C5F57]">Memuat data pengguna...</span>
         </div>
       )}
-
+      {!loading && users.length > 0 && (
+        <div className="mt-6 p-4 bg-white/30 rounded-xl">
+          <h3 className="font-medium text-[#6C5F57] mb-3">Statistik Pengguna</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="text-center">
+              <p className="text-2xl font-bold text-[#6C5F57]">{users.length}</p>
+              <p className="text-sm text-[#7d6f66]">Total Pengguna</p>
+            </div>
+            <div className="text-center">
+              <p className="text-2xl font-bold text-green-600">
+                {users.filter(u => u.status === 'active').length}
+              </p>
+              <p className="text-sm text-[#7d6f66]">Pengguna Aktif</p>
+            </div>
+            <div className="text-center">
+              <p className="text-2xl font-bold text-gray-600">
+                {users.filter(u => u.status === 'inactive').length}
+              </p>
+              <p className="text-sm text-[#7d6f66]">Pengguna Tidak Aktif</p>
+            </div>
+          </div>
+        </div>
+      )}
       {!loading && (
         <div className="overflow-x-auto">
           <table className="w-full">
@@ -167,30 +189,6 @@ export default function ManageUser() {
               )}
             </tbody>
           </table>
-        </div>
-      )}
-
-      {!loading && users.length > 0 && (
-        <div className="mt-6 p-4 bg-white/30 rounded-xl">
-          <h3 className="font-medium text-[#6C5F57] mb-3">Statistik Pengguna</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="text-center">
-              <p className="text-2xl font-bold text-[#6C5F57]">{users.length}</p>
-              <p className="text-sm text-[#7d6f66]">Total Pengguna</p>
-            </div>
-            <div className="text-center">
-              <p className="text-2xl font-bold text-green-600">
-                {users.filter(u => u.status === 'active').length}
-              </p>
-              <p className="text-sm text-[#7d6f66]">Pengguna Aktif</p>
-            </div>
-            <div className="text-center">
-              <p className="text-2xl font-bold text-gray-600">
-                {users.filter(u => u.status === 'inactive').length}
-              </p>
-              <p className="text-sm text-[#7d6f66]">Pengguna Tidak Aktif</p>
-            </div>
-          </div>
         </div>
       )}
     </div>

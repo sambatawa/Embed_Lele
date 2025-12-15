@@ -279,7 +279,7 @@ export function Cart() {
     if (!description) return '';
     const words = description.split(' ');
     const wordsPerLine = 10;
-    const maxWords = wordsPerLine * 2.5;
+    const maxWords = wordsPerLine * 2.8;
     
     if (words.length <= maxWords) {
       return description;

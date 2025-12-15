@@ -24,37 +24,23 @@ export default function AdminPage() {
         const isAuthenticated = localStorage.getItem('isAuthenticated');
         const userEmail = localStorage.getItem('userEmail');
         
-        console.log('Checking admin access:', { isAuthenticated, userEmail });
         
         if (isAuthenticated !== 'true' || !userEmail) {
-          console.log('Not authenticated, redirecting to login');
           router.push('/login');
           return;
         }
-        
-        // Check if user is admin in Firebase
         const adminsRef = ref(db, 'admins');
         const snapshot = await get(adminsRef);
-        
-        console.log('Firebase snapshot exists:', snapshot.exists());
-        
         if (snapshot.exists()) {
           const admins = snapshot.val();
-          console.log('Admins data:', admins);
-          
           const user = Object.values(admins).find(u => u.email === userEmail);
-          console.log('Found admin user:', user);
-          
           if (user && (user.role === 'admin' || user.permissions === 'full')) {
-            console.log('User is admin, granting access');
             setIsAdmin(true);
           } else {
-            console.log('User is not admin, redirecting to dashboard');
             router.push('/dashboard');
             return;
           }
         } else {
-          console.log('No admins collection found');
           router.push('/dashboard');
           return;
         }
