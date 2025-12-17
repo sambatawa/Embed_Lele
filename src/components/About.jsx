@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 
 export function About() {
   return (
-    <section id="about" className="py-20 px-6 bg-linear-to-br from-[#F5E6D3] via-[#F0DCC8] to-[#E8D4C0]">
+    <section id="about" className="py-20 px-6 bg-linear-to-br from-[#F5E6D3] to-[#E8D4C0]">
       <div className="max-w-[1400px] mx-auto">
         <div className="grid lg:grid-cols-2 gap-16 items-center">
           <motion.div
@@ -59,34 +59,8 @@ export function About() {
               viewport={{ once: true }}
               transition={{ delay: 0.5 }}
             >
-              <h3 className="text-gray-900 text-xl font-semibold mb-3">Formula Premium</h3>
               <p className="text-gray-600 leading-relaxed">
-                Pelet ikan kami dirancang dengan formula khusus menggunakan bahan-bahan pilihan 
-                berkualitas tinggi untuk mendukung pertumbuhan optimal ikan budidaya Anda.
-              </p>
-            </motion.div>
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.6 }}
-            >
-              <h3 className="text-gray-900 text-xl font-semibold mb-3">Nutrisi Seimbang</h3>
-              <p className="text-gray-600 leading-relaxed">
-                Mengandung protein, vitamin, dan mineral esensial yang dibutuhkan ikan untuk 
-                kesehatan, daya tahan tubuh, dan pertumbuhan yang maksimal.
-              </p>
-            </motion.div>
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.7 }}
-            >
-              <h3 className="text-gray-900 text-xl font-semibold mb-3">Hasil Terbukti</h3>
-              <p className="text-gray-600 leading-relaxed">
-                Telah digunakan oleh ribuan pembudidaya ikan di Indonesia dengan hasil 
-                pertumbuhan yang lebih cepat dan kualitas ikan yang lebih baik.
+                <span className="font-semibold text-[#D4A574]">Nutrimix</span> adalah produsen pelet ikan premium yang menghasilkan pakan berkualitas tinggi dengan menggunakan <span className="font-semibold text-[#C17A4F]">teknologi modern</span> dan bahan-bahan pilihan terbaik. Pelet ikan kami dirancang dengan <span className="font-semibold text-[#D4A574]">formula khusus</span> melalui proses produksi yang terstandar untuk mendukung pertumbuhan optimal ikan budidaya Anda. Mengandung <span className="font-semibold text-[#C17A4F]">protein, vitamin, dan mineral esensial</span> yang dibutuhkan ikan untuk kesehatan, daya tahan tubuh, dan pertumbuhan yang maksimal. Telah digunakan oleh <span className="font-semibold text-[#D4A574]">ribuan pembudidaya ikan</span> di Indonesia dengan hasil pertumbuhan yang lebih cepat dan kualitas ikan yang lebih baik.
               </p>
             </motion.div>
           </motion.div>

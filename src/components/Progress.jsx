@@ -10,35 +10,35 @@ const Progress = () => {
       title: '1. Pemilihan Formula',
       description: 'Pilih Formula Pelet Nutrimix (1-6) pada dashboard kami',
       theme: 'from-[#D4A574] to-[#E8B98B]',
-      cardGradient: 'from-[#F5E6D3]/80 to-[#F0DCC8]/80'
+      cardGradient: 'from-[#F5E6D3] to-[#F0DCC8]'
     },
     {
       icon: BarChart,
       title: '2. Penimbangan Bahan Baku',
       description: 'Sistem mengaktifkan penimbangan bahan baku. LCD memandu input bahan "Masukkan...", dan visualisasi tangki terisi real-time.',
       theme: 'from-[#C19A6B] to-[#D4A574]',
-      cardGradient: 'from-[#F0DCC8]/80 to-[#E8D4C0]/80'
+      cardGradient: 'from-[#F0DCC8] to-[#E8D4C0]'
     },
     {
       icon: Check,
       title: '3. Verifikasi Bahan',
       description: 'Target berat tercapai. Sistem mengkonfirmasi "Berat Bahan Terpenuhi", lalu tangki visualisasi otomatis kosong.',
       theme: 'from-[#A67C52] to-[#C19A6B]',
-      cardGradient: 'from-[#E8D4C0]/80 to-[#E0CCB8]/80'
+      cardGradient: 'from-[#E8D4C0] to-[#E0CCB8]'
     },
     {
       icon: Egg,
       title: '4. Proses penggilingan',
       description: 'Bahan terpenuhi, sistem menampilkan "Proses Menggiling!" (Tombol Darurat aktif).',
       theme: 'from-[#8B5A2B] to-[#A67C52]',
-      cardGradient: 'from-[#E0CCB8]/80 to-[#D8C4B0]/80'
+      cardGradient: 'from-[#E0CCB8] to-[#D8C4B0]'
     },
     {
       icon: Rocket,
       title: '5. Selesai',
       description: 'Selesai, LCD menampilkan "Selesai" dan kembali ke Menu.',
       theme: 'from-[#6F4E37] to-[#8B5A2B]',
-      cardGradient: 'from-[#D8C4B0]/80 to-[#D0BCA8]/80'
+      cardGradient: 'from-[#D8C4B0] to-[#D0BCA8]'
     },
   ];
 
@@ -77,7 +77,7 @@ const Progress = () => {
   return React.createElement(
     'div',
     {
-      className: 'min-h-screen bg-gradient-to-br from-[#F5E6D3] via-[#F0DCC8] to-[#E8D4C0] py-16 px-4 md:px-8'
+      className: 'min-h-screen bg-gradient-to-br from-[#F5E6D3] to-[#E8D4C0] py-16 px-4 md:px-8'
     },
     React.createElement(
       'div',
@@ -90,7 +90,6 @@ const Progress = () => {
           className: 'mb-16 text-center',
           style: { 
             fontSize: '3rem', 
-            lineHeight: '1.1', 
             fontWeight: '500',
             background: 'linear-gradient(90deg, #8B5A2B 0%, #C19A6B 50%, #D4A574 100%)',
             WebkitBackgroundClip: 'text',
@@ -107,7 +106,7 @@ const Progress = () => {
           className: 'relative'
         },
         React.createElement('div', {
-          className: 'timeline-line absolute left-1/2 top-0 h-0 w-1 bg-gradient-to-b from-[#D4A574] via-[#C19A6B] to-[#8B5A2B] transform -translate-x-1/2 transition-all duration-1000 ease-out'
+          className: 'timeline-line absolute left-1/2 top-0 h-0 w-1 bg-gradient-to-b from-[#D4A574] to-[#8B5A2B] transform -translate-x-1/2 transition-all duration-1000 ease-out'
         }),
         React.createElement(
           'div',

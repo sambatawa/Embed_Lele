@@ -35,7 +35,7 @@ export function FAQ() {
   };
 
   return (
-    <section id="faq" className="pt-20 pb-12 px-4 md:px-6 mt-5">
+    <section id="faq" className="pt-20 px-4 md:px-6 mt-5">
       <div className="max-w-[1400px] mx-auto">
         <motion.div 
           initial={{ opacity: 0, y: 30 }}
@@ -52,8 +52,7 @@ export function FAQ() {
               className="text-center mb-12"
             >
               <h2 className="mb-4 text-center" style={{ 
-                fontSize: '3.5rem', 
-                lineHeight: '1.1', 
+                fontSize: '3rem', 
                 fontWeight: '500',
                 background: 'linear-gradient(90deg, #8B5A2B 0%, #C19A6B 50%, #D4A574 100%)',
                 WebkitBackgroundClip: 'text',
@@ -86,7 +85,7 @@ export function FAQ() {
                 {faqs.map((faq, index) => (
                   <motion.div
                     key={index}
-                    className="bg- rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden border border-gray-100"
+                    className=" rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden border border-gray-100"
                     initial={{ opacity: 0, y: 10 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}

@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import DashboardLayout from '@/components/dashboard/layout';
 import Pengaturan from '@/components/dashboard/Pengaturan';
+import CustomCursor from '@/components/CustomCursor';
 
 export default function PengaturanPage() {
   const router = useRouter();
@@ -23,8 +24,11 @@ export default function PengaturanPage() {
   }
   
   return (
-    <DashboardLayout>
-      <Pengaturan />
-    </DashboardLayout>
+    <>
+      <CustomCursor />
+      <DashboardLayout>
+        <Pengaturan />
+      </DashboardLayout>
+    </>
   );
 }

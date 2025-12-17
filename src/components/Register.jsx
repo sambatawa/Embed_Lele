@@ -22,34 +22,34 @@ export function RegisterPage() {
 
   useEffect(() => {
     const loadReCaptcha = () => {
-      console.log('Environment check:', {
-        siteKey: process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY,
-        windowGrecaptcha: typeof window !== 'undefined' ? window.grecaptcha : 'no window'
-      });
-      
       if (typeof window !== 'undefined' && !window.grecaptcha) {
         const script = document.createElement('script');
-        const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || '6LdRgiIsAAAAAP6kinIy427ULWYE_pK6LN5O-PHN';
-        script.src = `https://www.google.com/recaptcha/api.js?render=${siteKey}`;
+        const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || '6LcuZPYrAAAAAL2Jvxtn-N715q8tLVW4FzYAoiUN';
+        script.src = `https://www.google.com/recaptcha/api.js`;
         script.async = true;
         script.defer = true;
         document.head.appendChild(script);
-        console.log('reCAPTCHA script loaded with site key:', siteKey);
+        
+        script.onload = () => {
+          console.log('reCAPTCHA v2 script loaded');
+          setTimeout(() => {
+            if (window.grecaptcha && document.getElementById('recaptcha-container')) {
+              window.grecaptcha.render('recaptcha-container', {
+                sitekey: siteKey
+              });
+            }
+          }, 500);
+        };
+        
+        script.onerror = () => {
+          console.error('Failed to load reCAPTCHA v2 script');
+        };
       }
     };
-    loadReCaptcha();
+    
+    const timer = setTimeout(loadReCaptcha, 100);
+    return () => clearTimeout(timer);
   }, []);
-
-  const handleRecaptcha = () => {
-    if (window.grecaptcha) {
-      window.grecaptcha.ready(() => {
-        window.grecaptcha.execute(process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY, { action: 'submit' })
-          .then((token) => {
-            setRecaptchaToken(token);
-          });
-      });
-    }
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -64,44 +64,23 @@ export function RegisterPage() {
       return;
     }
     
-    let token = 'skip-recaptcha';
-    
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    if (window.grecaptcha && window.grecaptcha.execute) {
+    let token = '';
+    if (window.grecaptcha) {
       try {
-        console.log('Getting reCAPTCHA token...');
-        console.log('grecaptcha methods:', Object.getOwnPropertyNames(window.grecaptcha));
-        
-        token = await new Promise((resolve, reject) => {
-          const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || '6LdRgiIsAAAAAP6kinIy427ULWYE_pK6LN5O-PHN';
-          console.log('Executing reCAPTCHA with site key:', siteKey);
-          
-          window.grecaptcha.ready(() => {
-            console.log('reCAPTCHA is ready');
-            window.grecaptcha.execute(siteKey, { action: 'submit' })
-              .then(token => {
-                console.log('reCAPTCHA token generated, length:', token.length);
-                resolve(token);
-              })
-              .catch(error => {
-                console.error('reCAPTCHA execute error:', error);
-                reject(error);
-              });
-          });
-        });
-        
-        setRecaptchaToken(token);
-        console.log('reCAPTCHA token obtained:', token ? 'success' : 'failed');
+        const recaptchaResponse = window.grecaptcha.getResponse();
+        if (!recaptchaResponse) {
+          alert('Silakan lengkapi verifikasi reCAPTCHA.');
+          return;
+        }
+        token = recaptchaResponse;
       } catch (error) {
-        console.error('reCAPTCHA error:', error);
-        token = 'skip-recaptcha';
+        console.error('reCAPTCHA v2 error:', error);
+        alert('Verifikasi reCAPTCHA gagal. Silakan refresh halaman dan coba lagi.');
+        return;
       }
     } else {
-      console.log('reCAPTCHA not loaded or not ready', {
-        grecaptcha: !!window.grecaptcha,
-        execute: !!(window.grecaptcha && window.grecaptcha.execute)
-      });
+      alert('reCAPTCHA tidak siap. Silakan refresh halaman dan coba lagi.');
+      return;
     }
     
     setIsLoading(true);
@@ -203,7 +182,7 @@ export function RegisterPage() {
           repeat: Infinity,
           ease: "linear"
         }}
-        className="absolute top-0 left-0 w-96 h-96 bg-linear-to-br from-[#D4A574]/30 to-[#C17A4F]/30 rounded-full blur-3xl"
+        className="absolute top-0 left-0 w-96 h-96 bg-linear-to-br from-[#E8D4C0] to-[#D8CDC3] rounded-full blur-3xl"
       />
       <motion.div
         animate={{
@@ -215,7 +194,7 @@ export function RegisterPage() {
           repeat: Infinity,
           ease: "linear"
         }}
-        className="absolute bottom-0 right-0 w-96 h-96 bg-linear-to-br from-[#C17A4F]/30 to-[#D4A574]/30 rounded-full blur-3xl"
+        className="absolute bottom-0 right-0 w-96 h-96 bg-linear-to-br from-[#D8CDC3] to-[#E8D4C0] rounded-full blur-3xl"
       />
 
       <div className="w-full max-w-6xl grid lg:grid-cols-2 gap-8 relative z-10">
@@ -232,7 +211,7 @@ export function RegisterPage() {
             className="w-full"
           >
             <div className="relative">
-              <div className="absolute inset-0 bg-linear-to-br from-[#C17A4F]/20 to-[#D4A574]/20 rounded-3xl blur-2xl" />
+              <div className="absolute inset-0 bg-linear-to-br from-[#F5E6D3] to-[#E8D4C0] rounded-3xl blur-2xl" />
               <img
                 src="1.png"
                 alt="Main Facility"
@@ -302,21 +281,6 @@ export function RegisterPage() {
                   <motion.div
                     initial={{ x: -20, opacity: 0 }}
                     animate={{ x: 0, opacity: 1 }}
-                    transition={{ delay: 0.8, duration: 0.5 }}
-                    whileHover={{ scale: 1.02 }}
-                    className="flex items-center justify-start gap-3 bg-white/10 backdrop-blur-lg rounded-lg p-2 border border-white/40 hover:bg-white/20 transition-all"
-                  >
-                    <motion.div
-                      animate={{ scale: [1, 1.2, 1] }}
-                      transition={{ duration: 2, repeat: Infinity, delay: 0.3 }}
-                      className="w-2 h-2 bg-gray-400 rounded-full shadow-lg"
-                    />
-                    <span className="text-sm text-white font-medium drop-shadow-sm">Monitoring real-time kualitas produksi</span>
-                  </motion.div>
-                  
-                  <motion.div
-                    initial={{ x: -20, opacity: 0 }}
-                    animate={{ x: 0, opacity: 1 }}
                     transition={{ delay: 0.9, duration: 0.5 }}
                     whileHover={{ scale: 1.02 }}
                     className="flex items-center justify-start gap-3 bg-white/10 backdrop-blur-lg rounded-lg p-2 border border-white/40 hover:bg-white/20 transition-all"
@@ -346,7 +310,7 @@ export function RegisterPage() {
             transition={{ delay: 0.2 }}
           >
             <h1 className=" font-bold mb-2 bg-linear-to-r from-gray-900 to-gray-700 bg-clip-text text-3xl">Daftar</h1>
-            <p className="text-gray-700 mb-8 font-medium drop-shadow-sm">Buat akun baru untuk mengakses semua fitur premium</p>
+            <p className="text-gray-700 mb-8 font-medium drop-shadow-sm">Buat akun baru untuk mengakses semua fitur lengkap alat melalui web</p>
           </motion.div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
@@ -485,10 +449,61 @@ export function RegisterPage() {
               </label>
             </motion.div>
 
-            <div className="g-recaptcha" 
-                 data-sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY}
-                 data-size="invisible"
-            />
+            <div id="recaptcha-container" className="mb-4"></div>
+
+            {isWaitingForVerification && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mb-6 p-8 bg-linear-to-br from-[#F5E6D3] to-[#E8D4C0] rounded-2xl border border-[#D4A574]/20 backdrop-blur-sm shadow-lg"
+              >
+                <div className="text-center">
+                  <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                    className="w-14 h-14 border-4 border-[#D4A574]/30 border-t-[#D4A574] rounded-full mx-auto mb-6 shadow-lg"
+                  />
+                  <h3 className="text-xl font-bold bg-linear-to-r from-[#D4A574] to-[#C17A4F] bg-clip-text text-transparent mb-3">
+                    {verificationStatus === 'pending' && 'Menunggu Verifikasi Email...'}
+                    {verificationStatus === 'verified' && 'Email Terverifikasi!'}
+                    {verificationStatus === 'expired' && 'Link Kadaluarsa'}
+                    {verificationStatus === 'timeout' && 'Timeout'}
+                  </h3>
+                  <p className="text-gray-700 mb-6 leading-relaxed">
+                    {verificationStatus === 'pending' && 
+                      `Kami telah mengirim link verifikasi ke ${email}. Silakan cek inbox dan klik link untuk melanjutkan.`}
+                    {verificationStatus === 'verified' && 'Akun Anda sedang dibuat...'}
+                    {verificationStatus === 'expired' && 'Link verifikasi telah kadaluarsa. Silakan coba lagi.'}
+                    {verificationStatus === 'timeout' && 'Waktu verifikasi habis. Silakan coba lagi.'}
+                  </p>
+                  {verificationStatus === 'pending' && (
+                    <div className="space-y-3">
+                      <div className="w-full bg-linear-to-r from-[#E8D4C0] to-[#D8CDC3] rounded-full h-3 overflow-hidden">
+                        <motion.div
+                          animate={{ width: ['0%', '60%', '100%'] }}
+                          transition={{ duration: 3, repeat: Infinity }}
+                          className="h-full bg-linear-to-r from-[#D4A574] to-[#C17A4F] rounded-full shadow-sm"
+                        />
+                      </div>
+                      <p className="text-sm text-gray-600 font-medium">Link berlaku selama 24 jam</p>
+                    </div>
+                  )}
+                  {(verificationStatus === 'expired' || verificationStatus === 'timeout') && (
+                    <motion.button
+                      whileHover={{ scale: 1.05, boxShadow: "0 10px 25px rgba(212, 165, 116, 0.3)" }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => {
+                        setIsWaitingForVerification(false);
+                        setVerificationStatus('');
+                      }}
+                      className="px-8 py-3 bg-linear-to-r from-[#D4A574] to-[#C17A4F] text-white rounded-xl hover:from-[#C17A4F] hover:to-[#B8734A] transition-all shadow-lg font-medium"
+                    >
+                      Coba Lagi
+                    </motion.button>
+                  )}
+                </div>
+              </motion.div>
+            )}
 
             <motion.button
               initial={{ y: 20, opacity: 0 }}
@@ -515,75 +530,9 @@ export function RegisterPage() {
             </motion.button>
           </form>
 
-          {/* Verification Waiting UI */}
-          {isWaitingForVerification && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="mt-8 p-8 bg-linear-to-br from-[#D4A574]/10 to-[#C17A4F]/10 rounded-2xl border border-[#D4A574]/20 backdrop-blur-sm shadow-lg"
-            >
-              <div className="text-center">
-                <motion.div
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                  className="w-14 h-14 border-4 border-[#D4A574]/30 border-t-[#D4A574] rounded-full mx-auto mb-6 shadow-lg"
-                />
-                <h3 className="text-xl font-bold bg-linear-to-r from-[#D4A574] to-[#C17A4F] bg-clip-text text-transparent mb-3">
-                  {verificationStatus === 'pending' && 'Menunggu Verifikasi Email...'}
-                  {verificationStatus === 'verified' && 'Email Terverifikasi!'}
-                  {verificationStatus === 'expired' && 'Link Kadaluarsa'}
-                  {verificationStatus === 'timeout' && 'Timeout'}
-                </h3>
-                <p className="text-gray-700 mb-6 leading-relaxed">
-                  {verificationStatus === 'pending' && 
-                    `Kami telah mengirim link verifikasi ke ${email}. Silakan cek inbox dan klik link untuk melanjutkan.`}
-                  {verificationStatus === 'verified' && 'Akun Anda sedang dibuat...'}
-                  {verificationStatus === 'expired' && 'Link verifikasi telah kadaluarsa. Silakan coba lagi.'}
-                  {verificationStatus === 'timeout' && 'Waktu verifikasi habis. Silakan coba lagi.'}
-                </p>
-                {verificationStatus === 'pending' && (
-                  <div className="space-y-3">
-                    <div className="w-full bg-linear-to-r from-[#D4A574]/20 to-[#C17A4F]/20 rounded-full h-3 overflow-hidden">
-                      <motion.div
-                        animate={{ width: ['0%', '60%', '100%'] }}
-                        transition={{ duration: 3, repeat: Infinity }}
-                        className="h-full bg-linear-to-r from-[#D4A574] to-[#C17A4F] rounded-full shadow-sm"
-                      />
-                    </div>
-                    <p className="text-sm text-gray-600 font-medium">Link berlaku selama 24 jam</p>
-                  </div>
-                )}
-                {(verificationStatus === 'expired' || verificationStatus === 'timeout') && (
-                  <motion.button
-                    whileHover={{ scale: 1.05, boxShadow: "0 10px 25px rgba(212, 165, 116, 0.3)" }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => {
-                      setIsWaitingForVerification(false);
-                      setVerificationStatus('');
-                    }}
-                    className="px-8 py-3 bg-linear-to-r from-[#D4A574] to-[#C17A4F] text-white rounded-xl hover:from-[#C17A4F] hover:to-[#B8734A] transition-all shadow-lg font-medium"
-                  >
-                    Coba Lagi
-                  </motion.button>
-                )}
-              </div>
-            </motion.div>
-          )}
-
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 1.1 }}
-            className="mt-8 text-center text-gray-600"
-          >
+          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.1 }} className="mt-8 text-center text-gray-600">
             Sudah punya akun?{' '}
-            <motion.a
-              whileHover={{ scale: 1.05 }}
-              href="/login"
-              className="text-[#D4A574] hover:text-[#C17A4F] inline-block"
-            >
-              Masuk
-            </motion.a>
+            <motion.a whileHover={{ scale: 1.05 }} href="/login" className="text-[#D4A574] hover:text-[#C17A4F] inline-block">Masuk</motion.a>
           </motion.p>
         </motion.div>
       </div>

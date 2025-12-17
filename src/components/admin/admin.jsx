@@ -42,14 +42,6 @@ export default function AdminDashboard() {
     { id: 'issues', label: 'Laporan Masalah', icon: MessageSquare }
   ];
 
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('id-ID', {
-      style: 'currency',
-      currency: 'IDR',
-      minimumFractionDigits: 0
-    }).format(amount);
-  };
-
   const getStatusColor = (status) => {
     switch (status) {
       case 'completed': return 'bg-green-100 text-green-800';
@@ -249,7 +241,7 @@ export default function AdminDashboard() {
                       <DollarSign className="w-8 h-8 text-[#6C5F57]" />
                       <span className="text-sm text-green-600 font-medium">+15%</span>
                     </div>
-                    <p className="text-2xl font-bold text-[#6C5F57]">{formatCurrency(stats.totalRevenue)}</p>
+                    <p className="text-2xl font-bold text-[#6C5F57]">Rp {stats.totalRevenue.toLocaleString('id-ID')}</p>
                     <p className="text-sm text-[#7d6f66]">Total Pendapatan</p>
                   </motion.div>
 
@@ -310,7 +302,7 @@ export default function AdminDashboard() {
                             <td className="py-3 px-4 text-sm">{order.id}</td>
                             <td className="py-3 px-4 text-sm">{order.customer}</td>
                             <td className="py-3 px-4 text-sm">{order.product}</td>
-                            <td className="py-3 px-4 text-sm font-medium">{formatCurrency(order.amount)}</td>
+                            <td className="py-3 px-4 text-sm font-medium">Rp {order.amount.toLocaleString('id-ID')}</td>
                             <td className="py-3 px-4">
                               <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
                                 {order.status}

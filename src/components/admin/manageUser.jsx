@@ -1,9 +1,8 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Users, Search, Eye, Trash2 } from 'lucide-react';
-import { ref, get, set, remove } from 'firebase/database';
-import { db } from '../../lib/firebase';
+import { Plus, Search, Filter, Edit, Trash2, User, Mail, Phone, Calendar, MapPin, Shield, Eye, EyeOff } from 'lucide-react';
+import { db, ref, get, set, update, remove } from '../../lib/firebase';
 
 export default function ManageUser() {
   const [users, setUsers] = useState([]);

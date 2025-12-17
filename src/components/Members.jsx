@@ -2,36 +2,36 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft, ChevronRight, Mail, Linkedin, Twitter, Github } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Instagram, Linkedin, Github } from 'lucide-react';
 
 const teamMembers = [
-  { id: 1, name: 'Christiano Nicoma Boseke', role: 'Leader Project', image: '/1.png', email: 'sarah@company.com', linkedin: '#', twitter: '#', github: '#' },
-  { id: 2, name: 'Genta Fallah Munggaran Sonagar', role: 'Lead Developer', image: '/2.png', email: 'michael@company.com', linkedin: '#', twitter: '#', github: '#' },
-  { id: 3, name: 'Irfan Rifqy Widya Syahbani', role: 'Lead Mechanical', image: '/3.png', email: 'emily@company.com', linkedin: '#', twitter: '#', github: '#' },
-  { id: 4, name: 'Dio Aranda', role: 'Lead Technical', image: '/1.png', email: 'david@company.com', linkedin: '#', twitter: '#', github: '#' },
-  { id: 5, name: 'Muhammad Aqil Ramadhani', role: 'Lead Designer', image: '/2.png', email: 'jessica@company.com', linkedin: '#', twitter: '#', github: '#' },
-  { id: 6, name: 'Muhammad Rafi Riza Pratama', role: 'Lead Documenter', image: '/3.png', email: 'robert@company.com', linkedin: '#', twitter: '#', github: '#' },
-  { id: 7, name: 'Inas Samara Taqia', role: 'Developer', image: '/1.png', email: 'amanda@company.com', linkedin: '#', twitter: '#', github: '#' },
-  { id: 8, name: 'Achlis Muhammad Yusuf', role: 'Developer', image: '/2.png', email: 'james@company.com', linkedin: '#', twitter: '#', github: '#' },
-  { id: 9, name: 'Fauzi Luqman Noor Ikhwan', role: 'Developer', image: '/3.png', email: 'sophie@company.com', linkedin: '#', twitter: '#', github: '#' },
-  { id: 10, name: 'Yehezkiel Junifer Reyno Oppier', role: 'Developer', image: '/1.png', email: 'daniel@company.com', linkedin: '#', twitter: '#', github: '#' },
-  { id: 11, name: 'Muhammad Rakha Buana', role: 'Mechanical', image: '/2.png', email: 'olivia@company.com', linkedin: '#', twitter: '#', github: '#' },
-  { id: 12, name: 'Muhammad Dzaky Azzshahir', role: 'Mechanical', image: '/3.png', email: 'william@company.com', linkedin: '#', twitter: '#', github: '#' },
-  { id: 13, name: 'Daffa Ardyana Eka Putra', role: 'Mechanical', image: '/1.png', email: 'isabella@company.com', linkedin: '#', twitter: '#', github: '#' },
-  { id: 14, name: 'Arya Kusuma Pratama', role: 'Mechanical', image: '/2.png', email: 'alexander@company.com', linkedin: '#', twitter: '#', github: '#' },
-  { id: 15, name: 'Ariel Pasha Ramaditya', role: 'Mechanical', image: '/3.png', email: 'mia@company.com', linkedin: '#', twitter: '#', github: '#' },
-  { id: 16, name: 'Sarah Aninditya', role: 'Technical', image: '/1.png', email: 'ethan@company.com', linkedin: '#', twitter: '#', github: '#' },
-  { id: 17, name: 'Raden Tuhibagus Ahmad K. S', role: 'Technical', image: '/2.png', email: 'charlotte@company.com', linkedin: '#', twitter: '#', github: '#' },
-  { id: 18, name: 'Della Arviyanti', role: 'Technical', image: '/3.png', email: 'benjamin@company.com', linkedin: '#', twitter: '#', github: '#' },
-  { id: 19, name: 'Laras Desfyanti', role: 'Technical', image: '/1.png', email: 'amelia@company.com', linkedin: '#', twitter: '#', github: '#' },
-  { id: 20, name: 'Adinda Octhavia Indriyani', role: 'Designer', image: '/2.png', email: 'lucas@company.com', linkedin: '#', twitter: '#', github: '#' },
-  { id: 21, name: 'Uzma Kratos Bijaksana', role: 'Designer', image: '/3.png', email: 'harper@company.com', linkedin: '#', twitter: '#', github: '#' },
-  { id: 22, name: 'Muhammad Rifqi Annaufal', role: 'Documenter', image: '/1.png', email: 'henry@company.com', linkedin: '#', twitter: '#', github: '#' },
-  { id: 23, name: 'Michael Christian Handoko', role: 'Documenter', image: '/2.png', email: 'evelyn@company.com', linkedin: '#', twitter: '#', github: '#' },
-  { id: 24, name: 'Selpi Anjeli ', role: 'Documenter', image: '/3.png', email: 'sebastian@company.com', linkedin: '#', twitter: '#', github: '#' },
-  { id: 25, name: 'Fadila Azahra', role: 'Documenter', image: '/1.png', email: 'abigail@company.com', linkedin: '#', twitter: '#', github: '#' },
-  { id: 26, name: 'Mikhail Hibrizi', role: 'Documenter', image: '/2.png', email: 'jack@company.com', linkedin: '#', twitter: '#', github: '#' },
-  { id: 27, name: 'M Qyblat Ilmy Mahdi', role: 'Documenter', image: '/3.png', email: 'emilyc@company.com', linkedin: '#', twitter: '#', github: '#' }
+  { id: 1, name: 'Christiano Nicoma Boseke', role: 'Leader Project', image: '/1.png', instagram: '#', linkedin: '#', github: '#' },
+  { id: 2, name: 'Genta Fallah Munggaran Sonagar', role: 'Lead Developer', image: '/2.png', instagram: '#', linkedin: '#', github: '#' },
+  { id: 3, name: 'Irfan Rifqy Widya Syahbani', role: 'Lead Mechanical', image: '/3.png', instagram: '#', linkedin: '#', github: '#' },
+  { id: 4, name: 'Dio Aranda', role: 'Lead Technical', image: '/1.png', instagram: '#', linkedin: '#', github: '#' },
+  { id: 5, name: 'Muhammad Aqil Ramadhani', role: 'Lead Designer', image: '/2.png', instagram: '#', linkedin: '#', github: '#' },
+  { id: 6, name: 'Muhammad Rafi Riza Pratama', role: 'Lead Documenter', image: '/3.png', instagram: '#', linkedin: '#', github: '#' },
+  { id: 7, name: 'Inas Samara Taqia', role: 'Developer', image: '/5.JPG', instagram: 'https://www.instagram.com/inassamarr', linkedin: 'https://www.linkedin.com/in/inas-samara-taqia/', github: 'https://github.com/sambatawa' },
+  { id: 8, name: 'Achlis Muhammad Yusuf', role: 'Developer', image: '/2.png', instagram: '#', linkedin: '#', github: '#' },
+  { id: 9, name: 'Fauzi Luqman Noor Ikhwan', role: 'Developer', image: '/3.png', instagram: '#', linkedin: '#', github: '#' },
+  { id: 10, name: 'Yehezkiel Junifer Reyno Oppier', role: 'Developer', image: '/1.png', instagram: '#', linkedin: '#', github: '#' },
+  { id: 11, name: 'Muhammad Rakha Buana', role: 'Mechanical', image: '/2.png', instagram: '#', linkedin: '#', github: '#' },
+  { id: 12, name: 'Muhammad Dzaky Azzshahir', role: 'Mechanical', image: '/3.png', instagram: '#', linkedin: '#', github: '#' },
+  { id: 13, name: 'Daffa Ardyana Eka Putra', role: 'Mechanical', image: '/1.png', instagram: '#', linkedin: '#', github: '#' },
+  { id: 14, name: 'Arya Kusuma Pratama', role: 'Mechanical', image: '/2.png', instagram: '#', linkedin: '#', github: '#' },
+  { id: 15, name: 'Ariel Pasha Ramaditya', role: 'Mechanical', image: '/3.png', instagram: '#', linkedin: '#', github: '#' },
+  { id: 16, name: 'Sarah Aninditya', role: 'Technical', image: '/1.png', instagram: '#', linkedin: '#', github: '#' },
+  { id: 17, name: 'Raden Tuhibagus Ahmad K. S', role: 'Technical', image: '/2.png', instagram: '#', linkedin: '#', github: '#' },
+  { id: 18, name: 'Della Arviyanti', role: 'Technical', image: '/3.png', instagram: '#', linkedin: '#', github: '#' },
+  { id: 19, name: 'Laras Desfyanti', role: 'Technical', image: '/1.png', instagram: '#', linkedin: '#', github: '#' },
+  { id: 20, name: 'Adinda Octhavia Indriyani', role: 'Designer', image: '/2.png', instagram: '#', linkedin: '#', github: '#' },
+  { id: 21, name: 'Uzma Kratos Bijaksana', role: 'Designer', image: '/3.png', instagram: '#', linkedin: '#', github: '#' },
+  { id: 22, name: 'Muhammad Rifqi Annaufal', role: 'Documenter', image: '/1.png', instagram: '#', linkedin: '#', github: '#' },
+  { id: 23, name: 'Michael Christian Handoko', role: 'Documenter', image: '/2.png', instagram: '#', linkedin: '#', github: '#' },
+  { id: 24, name: 'Selpi Anjeli ', role: 'Documenter', image: '/3.png', instagram: '#', linkedin: '#', github: '#' },
+  { id: 25, name: 'Fadila Azahra', role: 'Documenter', image: '/1.png', instagram: '#', linkedin: '#', github: '#' },
+  { id: 26, name: 'Mikhail Hibrizi', role: 'Documenter', image: '/2.png', instagram: '#', linkedin: '#', github: '#' },
+  { id: 27, name: 'M Qyblat Ilmy Mahdi', role: 'Documenter', image: '/3.png', instagram: '#', linkedin: '#', github: '#' }
 ];
 
 export function Members() {
@@ -66,7 +66,7 @@ export function Members() {
   );
 
   return (
-    <section id="members" className="py-20 px-6 bg-gray-50">
+    <section id="members" className="py-30 px-6">
       <div className="max-w-[1400px] mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
@@ -77,8 +77,8 @@ export function Members() {
         >
           <motion.h2 
             className="text-gray-900 mb-4"
-            style={{ fontSize: '3rem', lineHeight: '1.2', fontWeight: '500' }}
-          >Temui Tim Kami
+            style={{ fontSize: '3rem', fontWeight: '500' }}
+          >Temui Kami
           </motion.h2>
           <motion.p 
             className="text-gray-600 text-lg max-w-2xl mx-auto"
@@ -87,8 +87,8 @@ export function Members() {
             viewport={{ once: true }}
             transition={{ delay: 0.2 }}
           >
-            Kenali para individu berbakat yang membuat perusahaan kami hebat. 
-            Kami adalah tim yang beragam dari 27 profesional yang bersemangat.
+            Kenali para individu berbakat yang membuat alat hebat ini. 
+            Kami adalah tim yang beragam dari 27 anggota yang bersemangat dengan keahliannya.
           </motion.p>
         </motion.div>
 
@@ -101,7 +101,7 @@ export function Members() {
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -direction * 300 }}
                 transition={{ duration: 0.5, ease: 'easeInOut' }}
-                className="grid md:grid-cols-2 lg:grid-cols-3 gap-8"
+                className="grid grid-cols-3 gap-8"
               >
                 {visibleMembers.map((member, index) => (
                   <motion.div
@@ -109,8 +109,7 @@ export function Members() {
                     initial={{ opacity: 0, y: 50 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.1, duration: 0.6 }}
-                    whileHover={{ y: -10, scale: 1.02 }}
-                    className="bg-white rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden group cursor-pointer"
+                    className="bg-white rounded-t-full shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden group cursor-pointer"
                   >
                     <div className="relative h-80 overflow-hidden">
                       <img
@@ -126,10 +125,10 @@ export function Members() {
                           <motion.a
                             whileHover={{ scale: 1.1 }}
                             whileTap={{ scale: 0.9 }}
-                            href={member.email}
+                            href={member.instagram}
                             className="w-8 h-8 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-white/30 transition-colors"
                           >
-                            <Mail className="w-4 h-4 text-white" />
+                            <Instagram className="w-4 h-4 text-white" />
                           </motion.a>
                           <motion.a
                             whileHover={{ scale: 1.1 }}
@@ -138,14 +137,6 @@ export function Members() {
                             className="w-8 h-8 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-white/30 transition-colors"
                           >
                             <Linkedin className="w-4 h-4 text-white" />
-                          </motion.a>
-                          <motion.a
-                            whileHover={{ scale: 1.1 }}
-                            whileTap={{ scale: 0.9 }}
-                            href={member.twitter}
-                            className="w-8 h-8 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-white/30 transition-colors"
-                          >
-                            <Twitter className="w-4 h-4 text-white" />
                           </motion.a>
                           <motion.a
                             whileHover={{ scale: 1.1 }}
@@ -164,29 +155,29 @@ export function Members() {
             </AnimatePresence>
           </div>
 
-          <motion.button
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-            onClick={prevSlide}
-            disabled={currentIndex === 0}
-            className={`absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white shadow-lg flex items-center justify-center transition-all ${
-              currentIndex === 0 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-100 cursor-pointer'
-            }`}
-          >
-            <ChevronLeft className="w-6 h-6 text-gray-700" />
-          </motion.button>
+          {currentIndex > 0 && (
+            <motion.button
+              whileHover={{ x: -5 }}
+              whileTap={{ scale: 0.9 }}
+              onClick={prevSlide}
+              className="absolute left-4 top-1/2 -translate-y-1/2 w-14 h-14 rounded-full bg-linear-to-r to-[#d4a674a9] from-[#c17b4f93] shadow-2xl flex items-center justify-center transition-all hover:shadow-3xl group"
+            >
+              <ChevronLeft className="w-7 h-7 text-white group-hover:scale-110 transition-transform" />
+              <div className="absolute inset-0 rounded-full bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            </motion.button>
+          )}
 
-          <motion.button
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-            onClick={nextSlide}
-            disabled={currentIndex === maxIndex}
-            className={`absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white shadow-lg flex items-center justify-center transition-all ${
-              currentIndex === maxIndex ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-100 cursor-pointer'
-            }`}
-          >
-            <ChevronRight className="w-6 h-6 text-gray-700" />
-          </motion.button>
+          {currentIndex < maxIndex && (
+            <motion.button
+              whileHover={{ x: 5 }}
+              whileTap={{ scale: 0.9 }}
+              onClick={nextSlide}
+              className="absolute right-4 top-1/2 -translate-y-1/2 w-14 h-14 rounded-full bg-linear-to-r from-[#d4a674a9] to-[#c17b4f93] shadow-2xl flex items-center justify-center transition-all hover:shadow-3xl group"
+            >
+              <ChevronRight className="w-7 h-7 text-white group-hover:scale-110 transition-transform" />
+              <div className="absolute inset-0 rounded-full bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            </motion.button>
+          )}
         </div>
 
         <div className="flex justify-center gap-2 mt-8">
@@ -208,7 +199,7 @@ export function Members() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ delay: 0.5, duration: 0.8 }}
-          className="mt-20 grid grid-cols-2 md:grid-cols-4 gap-8"
+          className="mt-20 grid grid-cols-2 sm:grid-cols-4 gap-8"
         >
           <div className="text-center">
             <motion.div
@@ -216,45 +207,27 @@ export function Members() {
               whileInView={{ scale: 1 }}
               viewport={{ once: true }}
               transition={{ delay: 0.6, type: "spring" }}
-              className="text-4xl font-bold text-gray-900 mb-2"
+              className="text-4xl font-bold text-gray-800 mb-2"
             >
               27
             </motion.div>
             <p className="text-gray-600">Anggota Tim</p>
           </div>
           <div className="text-center">
-            <motion.div
-              initial={{ scale: 0 }}
-              whileInView={{ scale: 1 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.7, type: "spring" }}
-              className="text-4xl font-bold text-gray-900 mb-2"
-            >
+            <motion.div initial={{ scale: 0 }} whileInView={{ scale: 1 }} viewport={{ once: true }} transition={{ delay: 0.7, type: "spring" }} className="text-4xl font-bold text-gray-00 mb-2">
               1
             </motion.div>
             <p className="text-gray-600">Departemen</p>
           </div>
           <div className="text-center">
-            <motion.div
-              initial={{ scale: 0 }}
-              whileInView={{ scale: 1 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.8, type: "spring" }}
-              className="text-4xl font-bold text-gray-900 mb-2"
-            >
-              30+
+            <motion.div initial={{ scale: 0 }} whileInView={{ scale: 1 }} viewport={{ once: true }} transition={{ delay: 0.8, type: "spring" }} className="text-4xl font-bold text-gray-800 mb-2">
+              20+
             </motion.div>
             <p className="text-gray-600">Proyek Selesai</p>
           </div>
           <div className="text-center">
-            <motion.div
-              initial={{ scale: 0 }}
-              whileInView={{ scale: 1 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.9, type: "spring" }}
-              className="text-4xl font-bold text-gray-900 mb-2"
-            >
-              100%
+            <motion.div initial={{ scale: 0 }} whileInView={{ scale: 1 }} viewport={{ once: true }} transition={{ delay: 0.9, type: "spring" }} className="text-4xl font-bold text-gray-800 mb-2">
+              70%
             </motion.div>
             <p className="text-gray-600">Dedication</p>
           </div>

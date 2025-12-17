@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import DashboardLayout from '@/components/dashboard/layout';
 import AdminDashboard from '@/components/admin/admin';
 import { ref, get, db } from '@/lib/firebase';
+import CustomCursor from '@/components/CustomCursor';
 
 export default function AdminPage() {
   const [mounted, setMounted] = useState(false);
@@ -68,8 +69,11 @@ export default function AdminPage() {
   }
   
   return (
-    <DashboardLayout>
-      <AdminDashboard />
-    </DashboardLayout>
+    <>
+      <CustomCursor />
+      <DashboardLayout>
+        <AdminDashboard />
+      </DashboardLayout>
+    </>
   );
 }

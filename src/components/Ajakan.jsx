@@ -23,7 +23,7 @@ export function Ajakan() {
           transform: 'scale(1.1)'
         }}
       />
-      <div className="absolute inset-0 bg-linear-to-br from-[#F5F0EB]/90 via-[#F8F4EF]/90 to-[#FAF6F1]/90" />
+      <div className="absolute inset-0 bg-linear-to-br from-[#f5f0ebc0] via-[#f8f4efa1] to-[#faf6f1c5]" />
       <div className="max-w-[1400px] mx-auto relative">
 
         <motion.div
@@ -71,7 +71,7 @@ export function Ajakan() {
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              onClick={handleRegister}
+              onClick={() => router.push('/register')}
               className="bg-white border-2 border-[#D4A574] text-[#D4A574] px-8 py-4 rounded-full font-semibold hover:bg-[#F5F0EB] transition-colors flex items-center justify-center gap-2"
             >
               Daftar Pengguna

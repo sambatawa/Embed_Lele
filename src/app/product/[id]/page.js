@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import DashboardLayout from '@/components/dashboard/layout';
 import ProductID from '@/components/dashboard/productID';
+import CustomCursor from '@/components/CustomCursor';
 
 export default function ProductPage() {
   const [mounted, setMounted] = useState(false);
@@ -38,8 +39,11 @@ export default function ProductPage() {
   }
   
   return (
-    <DashboardLayout>
-      <ProductID />
-    </DashboardLayout>
+    <>
+      <CustomCursor />
+      <DashboardLayout>
+        <ProductID />
+      </DashboardLayout>
+    </>
   );
 }

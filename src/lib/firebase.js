@@ -53,7 +53,6 @@ export const hashPassword = async (password) => {
     const hashedPassword = await bcrypt.hash(password, 12);
     return hashedPassword;
   } catch (error) {
-    console.error('Error hashing password:', error);
     throw error;
   }
 };
@@ -87,12 +86,17 @@ export const checkUniqueCodeExists = async (code) => {
 
 export const saveUserToDatabase = async (userData) => {
   try {
-    const usersRef = ref(db, 'users');
-    const newUserRef = push(usersRef);
-    await set(newUserRef, userData);
-    return newUserRef.key;
+    const userId = userData.email.replace(/[^a-zA-Z0-9]/g, '_');
+    const userRef = ref(db, `users/${userId}`);
+    
+    const userWithId = {
+      ...userData,
+      id: userId
+    };
+    
+    await set(userRef, userWithId);
+    return userId;
   } catch (error) {
-    console.error('Error saving user:', error);
     throw error;
   }
 };
@@ -109,7 +113,6 @@ export const addValidUniqueCode = async (code, deviceInfo) => {
     });
     return newCodeRef.key;
   } catch (error) {
-    console.error('Error adding valid code:', error);
     throw error;
   }
 };
@@ -138,7 +141,6 @@ export const getAllUsers = async () => {
     }
     return [];
   } catch (error) {
-    console.error('Error fetching users:', error);
     throw error;
   }
 };
@@ -161,7 +163,6 @@ export const getUserStats = async () => {
     
     return stats;
   } catch (error) {
-    console.error('Error calculating user stats:', error);
     throw error;
   }
 };
@@ -172,7 +173,6 @@ export const deleteUser = async (userId) => {
     await set(userRef, null);
     return true;
   } catch (error) {
-    console.error('Error deleting user:', error);
     throw error;
   }
 };
@@ -192,7 +192,6 @@ export const updateUserStatus = async (userId, status) => {
     }
     return false;
   } catch (error) {
-    console.error('Error updating user status:', error);
     throw error;
   }
 };
@@ -218,7 +217,6 @@ export const addAdmin = async (adminData) => {
     await set(adminRef, adminWithTimestamp);
     return adminId;
   } catch (error) {
-    console.error('Error adding admin:', error);
     throw error;
   }
 };
@@ -237,7 +235,6 @@ export const getAllAdmins = async () => {
     }
     return [];
   } catch (error) {
-    console.error('Error fetching admins:', error);
     throw error;
   }
 };
@@ -253,7 +250,6 @@ export const isAdmin = async (email) => {
     }
     return false;
   } catch (error) {
-    console.error('Error checking admin status:', error);
     return false;
   }
 };
@@ -264,7 +260,6 @@ export const deleteAdmin = async (adminId) => {
     await set(adminRef, null);
     return true;
   } catch (error) {
-    console.error('Error deleting admin:', error);
     throw error;
   }
 };
@@ -284,7 +279,6 @@ export const updateAdmin = async (adminId, adminData) => {
     }
     return false;
   } catch (error) {
-    console.error('Error updating admin:', error);
     throw error;
   }
 };
@@ -315,7 +309,6 @@ export const promoteUserToAdmin = async (userId, adminData) => {
     
     return adminId;
   } catch (error) {
-    console.error('Error promoting user to admin:', error);
     throw error;
   }
 };
@@ -335,7 +328,6 @@ export const addProduct = async (productData) => {
     await set(newProductRef, productWithTimestamp);
     return newProductRef.key;
   } catch (error) {
-    console.error('Error adding product:', error);
     throw error;
   }
 };
@@ -354,7 +346,6 @@ export const getAllProducts = async () => {
     }
     return [];
   } catch (error) {
-    console.error('Error fetching products:', error);
     throw error;
   }
 };
@@ -365,7 +356,6 @@ export const deleteProduct = async (productId) => {
     await set(productRef, null);
     return true;
   } catch (error) {
-    console.error('Error deleting product:', error);
     throw error;
   }
 };
@@ -385,7 +375,6 @@ export const updateProduct = async (productId, productData) => {
     }
     return false;
   } catch (error) {
-    console.error('Error updating product:', error);
     throw error;
   }
 };
@@ -397,7 +386,6 @@ export const addFormula = async (formulaData) => {
     await set(newFormulaRef, formulaData);
     return newFormulaRef.key;
   } catch (error) {
-    console.error('Error adding formula:', error);
     throw error;
   }
 };
@@ -416,7 +404,6 @@ export const getAllFormulas = async () => {
     }
     return [];
   } catch (error) {
-    console.error('Error fetching formulas:', error);
     throw error;
   }
 };
@@ -427,7 +414,6 @@ export const deleteFormula = async (formulaId) => {
     await set(formulaRef, null);
     return true;
   } catch (error) {
-    console.error('Error deleting formula:', error);
     throw error;
   }
 };
@@ -447,7 +433,6 @@ export const updateFormula = async (formulaId, formulaData) => {
     }
     return false;
   } catch (error) {
-    console.error('Error updating formula:', error);
     throw error;
   }
 };
@@ -473,7 +458,6 @@ export const updateUserProfile = async (userEmail, profileData) => {
     
     return false;
   } catch (error) {
-    console.error('Error updating user profile:', error);
     throw error;
   }
 };
@@ -496,10 +480,7 @@ export const uploadImage = async (file, folder = 'products') => {
     
     return downloadURL;
   } catch (error) {
-    console.error('Error uploading image:', error);
-    
     if (error.code === 'storage/unauthorized' || error.message.includes('CORS')) {
-      console.error('CORS Error: Please configure Firebase Storage CORS rules');
       throw new Error('Firebase Storage CORS configuration required. Please check console for details.');
     }
     
@@ -537,7 +518,6 @@ export const addProductWithImage = async (productData, imageFile) => {
     await set(newProductRef, productWithTimestamp);
     return newProductRef.key;
   } catch (error) {
-    console.error('Error adding product with image:', error);
     throw error;
   }
 };
@@ -556,7 +536,6 @@ export const getCartItems = async (userId) => {
     }
     return [];
   } catch (error) {
-    console.error('Error fetching cart items:', error);
     throw error;
   }
 };
@@ -576,7 +555,6 @@ export const addToCart = async (userId, productData) => {
     
     await set(newCartItemRef, cartItem);
   } catch (error) {
-    console.error('Error adding to cart:', error);
     throw error;
   }
 };
@@ -594,7 +572,6 @@ export const updateCartItem = async (userId, itemId, quantity) => {
       });
     }
   } catch (error) {
-    console.error('Error updating cart item:', error);
     throw error;
   }
 };
@@ -605,7 +582,6 @@ export const removeFromCart = async (userId, itemId) => {
     await set(itemRef, null);
     return true;
   } catch (error) {
-    console.error('Error removing from cart:', error);
     throw error;
   }
 };
@@ -616,7 +592,6 @@ export const clearCart = async (userId) => {
     await set(cartRef, null);
     return true;
   } catch (error) {
-    console.error('Error clearing cart:', error);
     throw error;
   }
 };
@@ -634,7 +609,6 @@ export const getProductById = async (productId) => {
     }
     return null;
   } catch (error) {
-    console.error('Error fetching product:', error);
     throw error;
   }
 };

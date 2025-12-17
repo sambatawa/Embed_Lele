@@ -16,6 +16,46 @@ const corsHeaders = {
     "Cross-Origin-Resource-Policy": "cross-origin",
 };
 
+function validateFormData(data) {
+    const { name, email, subject, message, token } = data;
+    
+    if (!name || !email || !subject || !message || !token) {
+        return { valid: false, message: "Semua field wajib diisi" };
+    }
+    
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(String(email))) {
+        return { valid: false, message: "Format email tidak valid" };
+    }
+    
+    if (name.length < 2) {
+        return { valid: false, message: "Nama minimal 2 karakter" };
+    }
+    
+    if (subject.length < 5) {
+        return { valid: false, message: "Subject minimal 5 karakter" };
+    }
+    
+    if (message.length < 10) {
+        return { valid: false, message: "Pesan minimal 10 karakter" };
+    }
+    
+    return { valid: true };
+}
+
+async function validateEmailDomain(email) {
+    try {
+        const domain = String(email).split("@")[1];
+        const mxRecords = await dns.resolveMx(domain);
+        if (!mxRecords || mxRecords.length === 0) {
+            return { valid: false, message: "Domain email tidak memiliki server email (MX record)" };
+        }
+        return { valid: true };
+    } catch (e) {
+        return { valid: false, message: "Domain email tidak dapat diverifikasi" };
+    }
+}
+
 async function verifyEmailWithMailboxLayer(email) {
     const apiKey = process.env.MAILBOXLAYER_API_KEY;
     console.log('Email verification:', { email, apiKey: apiKey ? 'exists' : 'missing' });
@@ -37,21 +77,9 @@ async function verifyEmailWithMailboxLayer(email) {
         const noSuggestion = !data?.did_you_mean;
         const scoreOk = typeof data?.score !== "number" || data.score >= 0.6; 
         
-        console.log('Email validation checks:', {
-            formatValid,
-            mxFound,
-            smtpOk,
-            notDisposable,
-            notRole,
-            noSuggestion,
-            scoreOk,
-            score: data?.score
-        });
-        
         const isValid = Boolean(
             formatValid && mxFound && smtpOk && notDisposable && notRole && noSuggestion && scoreOk
         );
-        console.log('Email validation result:', isValid);
         return { isValid, raw: data };
     } catch (error) {
         console.error('MailboxLayer error:', error);
@@ -68,18 +96,14 @@ function rateLimit(ip, ms = 15_000) {
     return true;
 }
 
-async function verifyRecap(token) {
+async function verifyRecaptchaV2(token) {
     const secret = process.env.RECAPTCHA_SECRET_KEY;
-    console.log('reCAPTCHA verification:', { 
-        token: token?.substring(0, 20) + '...', 
-        secret: secret ? 'exists' : 'missing',
-        tokenLength: token?.length
-    });
     
     if (!secret) {
-        console.log('No secret key, skipping reCAPTCHA');
-        return true;
+        console.error('RECAPTCHA_SECRET_KEY is missing in environment variables!');
+        return false;
     }
+
     try {
         const res = await fetch("https://www.google.com/recaptcha/api/siteverify", {
             method: "POST",
@@ -87,14 +111,14 @@ async function verifyRecap(token) {
             body: `secret=${secret}&response=${token}`
         });
         const data = await res.json();
-        console.log('reCAPTCHA response:', data);
+        console.log('reCAPTCHA v2 response:', data);
+        
         return data.success === true;
     } catch (error) {
-        console.error('reCAPTCHA verification error:', error);
-        return true; 
+        console.error('reCAPTCHA v2 verification error:', error);
+        return false; 
     }
 }
-
 
 export async function OPTIONS() {
     return new NextResponse(null, { status: 200, headers: corsHeaders });
@@ -113,177 +137,144 @@ export async function GET(req) {
             const snapshot = await get(verificationRef);
             
             if (!snapshot.exists()) {
-                return NextResponse.redirect(
-                    new URL('/register?error=not_found', process.env.NEXT_PUBLIC_BASE_URL)
-                );
+                return NextResponse.redirect(new URL('/?error=not_found', process.env.NEXT_PUBLIC_BASE_URL));
             }
             
             const data = snapshot.val();
-            const now = new Date();
-            const expiresAt = new Date(data.expiresAt);
-            
-            if (now > expiresAt) {
-                return NextResponse.redirect(
-                    new URL('/register?error=expired', process.env.NEXT_PUBLIC_BASE_URL)
-                );
+            if (new Date() > new Date(data.expiresAt)) {
+                return NextResponse.redirect(new URL('/?error=expired', process.env.NEXT_PUBLIC_BASE_URL));
             }
             
             if (data.verificationToken !== token) {
-                return NextResponse.redirect(
-                    new URL('/register?error=invalid_token', process.env.NEXT_PUBLIC_BASE_URL)
-                );
+                return NextResponse.redirect(new URL('/?error=invalid_token', process.env.NEXT_PUBLIC_BASE_URL));
             }
             
-            try {
-                const hashedPassword = await bcrypt.hash(data.password, 12);
+            if (data.password && data.referralCode) {
+                try {
+                    const hashedPassword = await bcrypt.hash(data.password, 12);
+                    const userRef = ref(db, 'users/' + firebaseKey);
+                    await set(userRef, {
+                        name: data.name,
+                        email: data.email,
+                        password: hashedPassword,
+                        referralCode: data.referralCode,
+                        createdAt: new Date().toISOString(),
+                        isActive: true,
+                        emailVerified: true,
+                        verifiedAt: new Date().toISOString()
+                    });
+                    await set(verificationRef, null);
+                } catch (error) {
+                    console.error('Error creating user account:', error);
+                }
                 
-                const userRef = ref(db, 'users/' + firebaseKey);
-                await set(userRef, {
-                    name: data.name,
-                    email: data.email,
-                    password: hashedPassword,
-                    referralCode: data.referralCode,
-                    createdAt: new Date().toISOString(),
-                    isActive: true,
-                    emailVerified: true,
-                    verifiedAt: new Date().toISOString()
-                });
+                return NextResponse.redirect(new URL('/?verified=true&email=' + encodeURIComponent(email), process.env.NEXT_PUBLIC_BASE_URL));
+            } else {
+                try {
+                    const transporter = nodemailer.createTransport({
+                        service: "gmail",
+                        auth: {
+                            user: process.env.EMAIL_USERNAME,
+                            pass: process.env.EMAIL_PASSWORD,
+                        },
+                    });
+                    
+                    await transporter.sendMail({
+                        from: { name: "Nutrimix System", address: String(process.env.EMAIL_USERNAME) },
+                        to: 'samtasamara@apps.ipb.ac.id',
+                        subject: `Pesan Baru dari ${data.name}`,
+                        html: `
+                            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                                <h2>Pesan Baru dari Website</h2>
+                                <p><strong>Nama:</strong> ${data.name}</p>
+                                <p><strong>Email:</strong> ${data.email}</p>
+                                <p><strong>Subject:</strong> ${data.subject}</p>
+                                <p><strong>Pesan:</strong></p>
+                                <div style="background: #f5f5f5; padding: 15px; border-radius: 5px; margin: 10px 0;">
+                                    ${data.message}
+                                </div>
+                                <p style="color: #999; font-size: 12px;">Email telah diverifikasi pada: ${new Date().toLocaleString()}</p>
+                            </div>`,
+                    });
+                    
+                    await set(verificationRef, {
+                        ...data,
+                        status: 'verified',
+                        verifiedAt: new Date().toISOString()
+                    });
+                    
+                } catch (error) {
+                    console.error('Error sending notification email:', error);
+                }
                 
-                console.log('User account created successfully for:', data.email);
-                console.log('Password hashed successfully for:', data.email);
-                
-                await set(verificationRef, null);
-                
-            } catch (error) {
-                console.error('Error creating user account:', error);
+                return NextResponse.redirect(new URL('/?verified=true&email=' + encodeURIComponent(email), process.env.NEXT_PUBLIC_BASE_URL));
             }
-            
-            return NextResponse.redirect(
-                new URL('/login?verified=true&email=' + encodeURIComponent(email), process.env.NEXT_PUBLIC_BASE_URL)
-            );
         }
         
-        if (!key) {
-            return NextResponse.json(
-                { error: "Key is required" },
-                { status: 400, headers: corsHeaders }
-            );
+        if (key) {
+            const verificationRef = ref(db, 'pending_verifications/' + key);
+            const snapshot = await get(verificationRef);
+            if (!snapshot.exists()) return NextResponse.json({ error: "Verification not found" }, { status: 404, headers: corsHeaders });
+            const data = snapshot.val();
+            const now = new Date();
+            const expiresAt = new Date(data.expiresAt);
+            if (now > expiresAt) return NextResponse.json({ expired: true, verified: false }, { headers: corsHeaders });
+            if (data.status === 'verified') return NextResponse.json({ verified: true, expired: false, userData: data }, { headers: corsHeaders });
+            return NextResponse.json({ verified: false, expired: false, status: 'pending' }, { headers: corsHeaders });
         }
         
-        const verificationRef = ref(db, 'pending_verifications/' + key);
-        const snapshot = await get(verificationRef);
-        
-        if (!snapshot.exists()) {
-            return NextResponse.json(
-                { error: "Verification not found" },
-                { status: 404, headers: corsHeaders }
-            );
-        }
-        
-        const data = snapshot.val();
-        const now = new Date();
-        const expiresAt = new Date(data.expiresAt);
-        
-        if (now > expiresAt) {
-            return NextResponse.json(
-                { expired: true, verified: false },
-                { headers: corsHeaders }
-            );
-        }
-        
-        if (data.status === 'verified') {
-            return NextResponse.json(
-                { verified: true, expired: false, userData: data },
-                { headers: corsHeaders }
-            );
-        }
-        
-        return NextResponse.json(
-            { verified: false, expired: false, status: 'pending' },
-            { headers: corsHeaders }
-        );
-        
+        return NextResponse.json({ error: "Key is required" }, { status: 400, headers: corsHeaders });
     } catch (error) {
-        return NextResponse.json(
-            { error: "Internal server error" },
-            { status: 500, headers: corsHeaders }
-        );
+        return NextResponse.json({ error: "Internal server error" }, { status: 500, headers: corsHeaders });
     }
 }
 
 export async function POST(req) {
     const contentType = req.headers.get("content-type") || "";
     if (!contentType.includes("application/json")) {
-        return NextResponse.json(
-            { message: "Content-Type harus application/json", success: false },
-            { status: 400, headers: corsHeaders }
-        );
+        return NextResponse.json({ message: "Content-Type harus application/json", success: false }, { status: 400, headers: corsHeaders });
     }
     
     const ip = req.headers.get("x-forwarded-for") || "unknown";
     if (!rateLimit(ip)) {
-        return NextResponse.json(
-            { message: "Maximum Limit access", success: false },
-            { status: 429, headers: corsHeaders }
-        );
+        return NextResponse.json({ message: "Maximum Limit access", success: false }, { status: 429, headers: corsHeaders });
     }
 
     let body;
-    try {
-        body = await req.json();
-    } catch {
-        return NextResponse.json(
-            { message: "JSON tidak valid", success: false },
-            { status: 400, headers: corsHeaders }
-        );
+    try { 
+        body = await req.json(); 
+    } catch (error) {
+        return NextResponse.json({ message: "Invalid JSON body", success: false }, { status: 400, headers: corsHeaders });
     }
-
+    
     const { name, email, subject, message, token } = body; 
     
-    if (!name || !email || !subject || !message || !token) { 
-        return NextResponse.json(
-            { message: "Semua field wajib diisi", success: false },
-            { status: 400, headers: corsHeaders }
-        );
+    if (!token) {
+        return NextResponse.json({ message: "reCAPTCHA verification diperlukan. Silakan centang checkbox reCAPTCHA.", success: false }, { status: 400, headers: corsHeaders });
+    }
+    
+    const validation = validateFormData({ name, email, subject, message, token });
+    if (!validation.valid) {
+        return NextResponse.json({ message: validation.message, success: false }, { status: 400, headers: corsHeaders });
     }
 
-    const recapValid = await verifyRecap(String(token));
+    const recapValid = await verifyRecaptchaV2(String(token));
     if (!recapValid) {
-        return NextResponse.json({ message: "reCAPTCHA gagal.", success: false }, { status: 400, headers: corsHeaders });
+        return NextResponse.json({ message: "Verifikasi reCAPTCHA gagal. Silakan coba lagi.", success: false }, { status: 400, headers: corsHeaders });
     }
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(String(email))) {
-        return NextResponse.json(
-            { message: "Format email tidak valid", success: false },
-            { status: 400, headers: corsHeaders }
-        );
+    const domainValidation = await validateEmailDomain(email);
+    if (!domainValidation.valid) {
+        return NextResponse.json({ message: domainValidation.message, success: false }, { status: 400, headers: corsHeaders });
     }
     
-    try {
-        const domain = String(email).split("@")[1];
-        const mxRecords = await dns.resolveMx(domain);
-
-        if (!mxRecords || mxRecords.length === 0) {
-            return NextResponse.json(
-                { message: "Domain email tidak memiliki server email (MX record)", success: false },
-                { status: 400, headers: corsHeaders }
-            );
-        }
-    } catch (e) {
-        return NextResponse.json(
-            { message: "Domain email tidak valid atau tidak dapat diverifikasi", success: false },
-            { status: 400, headers: corsHeaders }
-        );
+    const mailCheck = await verifyEmailWithMailboxLayer(email);
+    if (!mailCheck.isValid) {
+        return NextResponse.json({ message: "Email tidak valid atau tidak dapat dikirim. Silakan gunakan email lain.", success: false }, { status: 400, headers: corsHeaders });
     }
     
-    console.log('Skipping email verification for testing');
-
     if (!process.env.EMAIL_USERNAME || !process.env.EMAIL_PASSWORD) {
-        return NextResponse.json(
-            { message: "Server configuration error: Email credentials missing", success: false },
-            { status: 500, headers: corsHeaders }
-        );
+        return NextResponse.json({ message: "Server configuration error", success: false }, { status: 500, headers: corsHeaders });
     }
     
     try {
@@ -295,11 +286,8 @@ export async function POST(req) {
             },
         });
         
-        const time = new Date().toLocaleString("id-ID", { timeZone: "Asia/Jakarta" });
         const verificationToken = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-        
         const verificationLink = `${process.env.NEXT_PUBLIC_BASE_URL}/api/validation?token=${verificationToken}&email=${encodeURIComponent(email)}`;
-        
         const firebaseKey = email.replace(/[^a-zA-Z0-9]/g, '_'); 
         const tempDataRef = ref(db, 'pending_verifications/' + firebaseKey);
         
@@ -308,8 +296,6 @@ export async function POST(req) {
             email: String(email),
             subject: String(subject),
             message: String(message),
-            password: body.password,
-            referralCode: body.referralCode,
             verificationToken: verificationToken,
             timestamp: new Date().toISOString(),
             expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
@@ -319,91 +305,27 @@ export async function POST(req) {
         await transporter.sendMail({
             from: { name: "Nutrimix System", address: String(process.env.EMAIL_USERNAME) },
             to: String(email),
-            subject: "Verifikasi Email Pendaftaran Anda",
+            subject: "Verifikasi Email Pesan Anda",
             html: `
-                <div style="font-family: Arial, Helvetica, sans-serif; color: #111; line-height: 1.6; max-width: 600px; margin: 0 auto;">
-                    <h2 style="color: #333;">Verifikasi Email Anda</h2>
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                    <h2>Verifikasi Email Anda</h2>
                     <p>Hi <strong>${String(name)}</strong>,</p>
-                    <p>
-                        Untuk melanjutkan registrasi, silakan klik tombol verifikasi di bawah ini. Halaman pendaftaran akan otomatis diperbarui setelah verifikasi:
-                    </p>
+                    <p>Klik tombol di bawah ini untuk verifikasi pesan Anda:</p>
                     <div style="text-align: center; margin: 30px 0;">
-                        <a href="${verificationLink}" 
-                           style="background: linear-gradient(135deg, #D4A574, #C17A4F); color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block; box-shadow: 0 4px 15px rgba(212, 165, 116, 0.3);">
-                            Verifikasi Email Saya
-                        </a>
+                        <a href="${verificationLink}" style="background: #C17A4F; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">Verifikasi Email Saya</a>
                     </div>
-                    <p style="color: #999; font-size: 12px; text-align: center;">Link verifikasi berlaku selama 24 jam.</p>
+                    <p style="color: #999; font-size: 12px; text-align: center;">Link berlaku selama 24 jam.</p>
                 </div>`,
         });
         
         return NextResponse.json({ 
-            message: "Tautan verifikasi telah dikirim ke email Anda. Silakan cek inbox dan klik tautan untuk melanjutkan pendaftaran.", 
+            message: "Tautan verifikasi telah dikirim ke email Anda.", 
             success: true,
             requiresLinkVerification: true,
             pendingKey: firebaseKey
-        }, 
-        { headers: corsHeaders }); 
+        }, { headers: corsHeaders }); 
         
     } catch (error) {
-        console.error("Error dalam proses pengiriman email atau penyimpanan Firebase:", error);
-        return NextResponse.json({ message: "Gagal memproses pendaftaran.", success: false }, { status: 500, headers: corsHeaders });
+        return NextResponse.json({ message: "Gagal memproses pesan.", success: false }, { status: 500, headers: corsHeaders });
     }
-}
-
-export async function handleVerification(req) {
-    try {
-        const { searchParams } = new URL(req.url);
-        const token = searchParams.get('token');
-        const email = searchParams.get('email');
-        
-        if (!token || !email) {
-            return NextResponse.redirect(
-                new URL('/register?error=missing_params', process.env.NEXT_PUBLIC_BASE_URL)
-            );
-        }
-        
-        const firebaseKey = email.replace(/[^a-zA-Z0-9]/g, '_');
-        const verificationRef = ref(db, 'pending_verifications/' + firebaseKey);
-        const snapshot = await get(verificationRef);
-        
-        if (!snapshot.exists()) {
-            return NextResponse.redirect(
-                new URL('/register?error=not_found', process.env.NEXT_PUBLIC_BASE_URL)
-            );
-        }
-        
-        const data = snapshot.val();
-        const now = new Date();
-        const expiresAt = new Date(data.expiresAt);
-        
-        // Check if expired
-        if (now > expiresAt) {
-            return NextResponse.redirect(
-                new URL('/register?error=expired', process.env.NEXT_PUBLIC_BASE_URL)
-            );
-        }
-        
-        // Check if token matches
-        if (data.verificationToken !== token) {
-            return NextResponse.redirect(
-                new URL('/register?error=invalid_token', process.env.NEXT_PUBLIC_BASE_URL)
-            );
-        }
-        
-        await set(verificationRef, {
-            ...data,
-            status: 'verified',
-            verifiedAt: new Date().toISOString()
-        });
-        
-        return NextResponse.redirect(
-            new URL('/register?verified=true&email=' + encodeURIComponent(email), process.env.NEXT_PUBLIC_BASE_URL)
-        );
-        
-    } catch (error) {
-        return NextResponse.redirect(
-            new URL('/register?error=server_error', process.env.NEXT_PUBLIC_BASE_URL)
-        );
-    }
-}
+} 

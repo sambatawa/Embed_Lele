@@ -1,20 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import MidtransClient from 'midtrans-client';
 
-// Midtrans Configuration
 const midtransClient = new MidtransClient.Snap({
   isProduction: false,
   serverKey: process.env.MIDTRANS_SERVER_KEY || 'SB-Mid-server-YOUR_SERVER_KEY',
   clientKey: process.env.MIDTRANS_CLIENT_KEY || 'SB-Mid-client-YOUR_CLIENT_KEY'
 });
 
-// Payment API - Create Transaction
 export async function POST(request) {
   try {
     const body = await request.json();
     const { customerDetails, itemDetails } = body;
 
-    // Validation
     if (!customerDetails?.firstName || !customerDetails?.email || !customerDetails?.phone) {
       return NextResponse.json(
         { success: false, error: 'Missing required customer details' },
@@ -29,10 +26,8 @@ export async function POST(request) {
       );
     }
 
-    // Generate unique order ID
     const orderId = 'NUTRIMIX-' + Date.now() + '-' + Math.random().toString(36).substring(2, 9);
 
-    // Midtrans transaction parameters
     const parameter = {
       transaction_details: {
         order_id: orderId,
@@ -74,17 +69,7 @@ export async function POST(request) {
         }
       },
       enabled_payments: [
-        'credit_card',
-        'gopay',
-        'shopeepay',
-        'dana', 
-        'qris',
-        'bca_va',
-        'bni_va',
-        'bri_va',
-        'cimb_va',
-        'permata_va',
-        'other_va'
+        'qris'
       ],
       callbacks: {
         finish: `${process.env.NEXT_PUBLIC_BASE_URL}/payment/success`,
@@ -100,10 +85,8 @@ export async function POST(request) {
       custom_field3: new Date().toISOString()
     };
 
-    // Create transaction
     const transaction = await midtransClient.createTransaction(parameter);
     
-    // Log transaction for tracking
     console.log('Transaction created:', {
       orderId,
       email: customerDetails.email,
@@ -133,15 +116,12 @@ export async function POST(request) {
   }
 }
 
-// Handle payment notification (webhook)
 export async function POST_NOTIFICATION(request) {
   try {
     const body = await request.json();
     
-    // Verify notification signature (optional but recommended)
     const notificationSignature = request.headers.get('x-callback-signature');
     
-    // Process the notification based on transaction status
     const { order_id, transaction_status, fraud_status } = body;
     
     console.log('Payment notification received:', {
@@ -149,12 +129,6 @@ export async function POST_NOTIFICATION(request) {
       status: transaction_status,
       fraud: fraud_status
     });
-    
-    // Here you can:
-    // 1. Update order status in database
-    // 2. Send confirmation email to customer
-    // 3. Trigger shipping process
-    // 4. Update inventory
     
     return NextResponse.json({ success: true });
     

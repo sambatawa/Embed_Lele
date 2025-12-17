@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import DashboardLayout from '@/components/dashboard/layout';
 import OrderPage from '@/components/dashboard/order';
+import CustomCursor from '@/components/CustomCursor';
 
 export default function Order() {
   const [mounted, setMounted] = useState(false);
@@ -37,8 +38,11 @@ export default function Order() {
   }
   
   return (
-    <DashboardLayout>
-      <OrderPage />
-    </DashboardLayout>
+    <>
+      <CustomCursor />
+      <DashboardLayout>
+        <OrderPage />
+      </DashboardLayout>
+    </>
   );
 }

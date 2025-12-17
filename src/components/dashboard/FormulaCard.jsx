@@ -41,7 +41,7 @@ export default function FormulaCard({ title, berat_pelet, category, ingredients,
     <motion.div
       onClick={() => onModal({ title, berat_pelet, category, ingredients, protein })}
       whileTap={{ scale: 0.97 }}
-      className={`group cursor-pointer p-4 rounded-2xl border shadow-sm bg-linear-to-br from-[#CBBFB4]/80 via-[#D8CDC3]/80 to-[#E7DFD7]/80 backdrop-blur-xl border-[#EDE6DF] transition-all flex flex-col justify-between h-28
+      className={`group cursor-pointer p-4 rounded-2xl border shadow-sm bg-linear-to-br from-[#CBBFB4] via-[#D8CDC3] to-[#E7DFD7] backdrop-blur-xl border-[#EDE6DF] transition-all flex flex-col justify-between h-28
         ${selected ? "ring-2 ring-[#CBBFB4]" : ""}
       `}
     >

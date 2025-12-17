@@ -43,7 +43,6 @@ export const ProductModal = React.memo(function ProductModal({ isOpen, onClose, 
 
     if (isOpen) {
       fetchProducts();
-      // Disable body scroll
       document.body.style.overflow = 'hidden';
       document.body.style.position = 'fixed';
       document.body.style.width = '100%';
@@ -51,7 +50,6 @@ export const ProductModal = React.memo(function ProductModal({ isOpen, onClose, 
     }
 
     return () => {
-      // Re-enable body scroll
       const scrollY = document.body.style.top;
       document.body.style.overflow = '';
       document.body.style.position = '';
@@ -79,7 +77,7 @@ export const ProductModal = React.memo(function ProductModal({ isOpen, onClose, 
   ];
 
   const handleWhatsApp = () => {
-    const phoneNumber = "6282211511345";
+    const phoneNumber = process.env.NOMOR_HP;
     const message = encodeURIComponent(
       "Halo Nutrimix,\n\n" +
       "Saya ingin memesan produk dengan detail berikut:\n\n" +
@@ -152,7 +150,7 @@ export const ProductModal = React.memo(function ProductModal({ isOpen, onClose, 
   useEffect(() => {
     const script = document.createElement('script');
     script.src = 'https://app.sandbox.midtrans.com/snap/snap.js';
-    script.setAttribute('data-client-key', process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY || 'SB-Mid-client-YOUR_CLIENT_KEY');
+    script.setAttribute('data-client-key', process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY);
     script.async = true;
     document.body.appendChild(script);
 
@@ -202,7 +200,7 @@ export const ProductModal = React.memo(function ProductModal({ isOpen, onClose, 
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.9, opacity: 0 }}
-          className="bg-linear-to-br from-white/90 via-white/80 to-white/70 backdrop-blur-2xl rounded-t-[50px] max-w-6xl w-full max-h-[90vh] overflow-hidden shadow-2xl border border-white/30 md:max-h-[90vh] md:overflow-hidden overflow-y-auto"
+          className="bg-linear-to-br from-white to-gray-100 backdrop-blur-2xl rounded-t-[50px] max-w-6xl w-full max-h-[90vh] overflow-hidden shadow-2xl border border-gray-200 md:max-h-[90vh] md:overflow-hidden overflow-y-auto"
           onClick={(e) => e.stopPropagation()}
         >
           <div className="p-6">
@@ -252,7 +250,7 @@ export const ProductModal = React.memo(function ProductModal({ isOpen, onClose, 
             )}
             <div className="grid md:grid-cols-2 gap-8">
               <div className="space-y-4">
-                <div className="aspect-square bg-linear-to-br from-[#F5E6D3]/80 to-[#E8D4C0]/80 backdrop-blur-sm rounded-2xl overflow-hidden border border-white/30">
+                <div className="aspect-square bg-linear-to-br from-[#F5E6D3] to-[#E8D4C0] backdrop-blur-sm rounded-2xl overflow-hidden border border-white/30">
                   <img 
                     src={selectedProduct.image || '/1.png'} 
                     alt={selectedProduct.name}
@@ -262,7 +260,7 @@ export const ProductModal = React.memo(function ProductModal({ isOpen, onClose, 
                     }}
                   />
                 </div>
-                <div className="backdrop-blur-md bg-linear-to-r from-[#D4A574]/90 to-[#C19A6B]/90 text-white p-4 rounded-2xl border border-white/50">
+                <div className="backdrop-blur-md bg-linear-to-r from-[#D4A574] to-[#C17A4F] text-white p-4 rounded-2xl border border-white/50">
                   <p className="text-sm opacity-90">Harga</p>
                   <p className="text-3xl font-bold">{formatCurrency(selectedProduct.price)}</p>
                 </div>
@@ -287,10 +285,10 @@ export const ProductModal = React.memo(function ProductModal({ isOpen, onClose, 
                             const [label, value] = spec.trim().split(':');
                             return (
                               <tr key={index} className="border-b border-white/10 last:border-b-0">
-                                <td className="px-4 py-3 text-sm font-medium text-gray-900 bg-linear-to-r from-[#F5E6D3]/50 to-[#E8D4C0]/50 w-2/5">
+                                <td className="px-4 py-3 text-sm font-medium text-gray-900 bg-linear-to-r from-[#F5E6D3] to-[#E8D4C0] w-2/5">
                                   {label?.trim() || ''}
                                 </td>
-                                <td className="px-4 py-3 text-sm text-gray-600 bg-linear-to-r from-[#F5E6D3]/30 to-[#E8D4C0]/30 w-3/5">
+                                <td className="px-4 py-3 text-sm text-gray-600 bg-linear-to-r from-[#F0DCC8] to-[#E8D4C0] w-3/5">
                                   {value?.trim() || ''}
                                 </td>
                               </tr>
@@ -330,7 +328,7 @@ export const ProductModal = React.memo(function ProductModal({ isOpen, onClose, 
                         whileHover={{ scale: 1.05, y: -2 }}
                         whileTap={{ scale: 0.95 }}
                         onClick={handleWhatsApp}
-                        className="flex-1 bg-linear-to-r from-[#C17A4F]/80 to-[#B8734A]/40 border-l-2 hover:from-[#B8734A]/90 hover:to-[#9B6540]/90 text-white px-2 py-4 rounded-l-full font-semibold transition-all duration-300 flex items-center justify-center gap-3 shadow-lg hover:shadow-xl group"
+                        className="flex-1 bg-linear-to-r from-[#C17A4F] to-[#B8734A] border-l-2 hover:from-[#B8734A] hover:to-[#9B6540] text-white px-2 py-4 rounded-l-full font-semibold transition-all duration-300 flex items-center justify-center gap-3 shadow-lg hover:shadow-xl group"
                       >
                         <div className="w-5 h-5 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
                           <Phone className="w-3 h-3" />
@@ -340,9 +338,9 @@ export const ProductModal = React.memo(function ProductModal({ isOpen, onClose, 
                       <motion.button
                         whileHover={{ scale: 1.05, y: -2 }}
                         whileTap={{ scale: 0.95 }}
-                        onClick={() => setShowCustomerForm(true)}
+                        onClick={handlePayment}
                         disabled={isProcessing}
-                        className="flex-1 bg-linear-to-r from-[#D4A574]/40 to-[#C17A4F]/90 border-r-2 hover:from-[#C17A4F]/90 hover:to-[#B8734A]/90 text-white px-2 py-4 rounded-r-full font-semibold transition-all duration-300 flex items-center justify-center gap-3 shadow-lg hover:shadow-xl group"
+                        className="flex-1 bg-linear-to-r from-[#D4A574] to-[#C17A4F] border-r-2 hover:from-[#C17A4F] hover:to-[#B8734A] text-white px-2 py-4 rounded-r-full font-semibold transition-all duration-300 flex items-center justify-center gap-3 shadow-lg hover:shadow-xl group"
                       >
                         <div className="w-5 h-5 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
                           <ShoppingBag className="w-3 h-3" />

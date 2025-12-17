@@ -456,7 +456,7 @@ export function Cart() {
             transition={{ delay: 0.4 }}
             className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4"
           >
-            <div className="bg-linear-to-r from-[#D4A574]/10 to-[#D4A574]/5 rounded-xl p-4 flex items-center gap-3 border border-[#D4A574]/20 shadow-sm">
+            <div className="bg-linear-to-r from-[#F5E6D3] to-[#E8D4C0] rounded-xl p-4 flex items-center gap-3 border border-[#D4A574]/20 shadow-sm">
               <Truck className="w-6 h-6 text-[#D4A574] shrink-0" />
               <div className="flex-1">
                 <p className="text-sm font-medium text-gray-900">Pengiriman Gratis</p>
@@ -468,7 +468,7 @@ export function Cart() {
                 </div>
               </div>
             </div>
-            <div className="bg-linear-to-r from-[#D4A574]/10 to-[#D4A574]/5 rounded-xl p-4 flex items-center gap-3 border border-[#D4A574]/20 shadow-sm">
+            <div className="bg-linear-to-r from-[#F5E6D3] to-[#E8D4C0] rounded-xl p-4 flex items-center gap-3 border border-[#D4A574]/20 shadow-sm">
               <Tag className="w-6 h-6 text-[#D4A574] shrink-0" />
               <div className="flex-1">
                 <p className="text-sm font-medium text-gray-900">Voucher Tersedia</p>

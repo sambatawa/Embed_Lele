@@ -6,9 +6,21 @@ import { Instagram, Facebook, Mail, Phone } from 'lucide-react';
 
 export function Footer() {
   const footerLinks = {
-    Produk: ['Nutrimix', 'Aksesoris', 'Panduan Penggunaan'],
-    Layanan: ['Support', 'Garansi', 'Konsultasi Teknis'],
-    Perusahaan: ['Tentang Kami', 'Kontak', 'Alamat'],
+    Produk: [
+      { name: 'Nutrimix', href: '#products' },
+      { name: 'Aksesoris', href: '#products' },
+      { name: 'Panduan Penggunaan', href: '#products' }
+    ],
+    Layanan: [
+      { name: 'Support', href: '#faq' },
+      { name: 'Garansi', href: '#faq' },
+      { name: 'Konsultasi Teknis', href: '#faq' }
+    ],
+    Perusahaan: [
+      { name: 'Tentang Kami', href: '#members' },
+      { name: 'Kontak', href: '#contact' },
+      { name: 'Alamat', href: '#contact' }
+    ],
   };
 
   return (
@@ -34,7 +46,7 @@ export function Footer() {
             </p>
             <div className="flex gap-4">
               <motion.a
-                href="#"
+                href="https://www.instagram.com/inassamarr"
                 whileHover={{ scale: 1.2, y: -3 }}
                 whileTap={{ scale: 0.9 }}
                 className="w-10 h-10 rounded-full bg-white/40 hover:bg-[#D4A574] text-[#5D4A3C] hover:text-white flex items-center justify-center transition-all duration-300 backdrop-blur-sm"
@@ -42,15 +54,7 @@ export function Footer() {
                 <Instagram className="w-4 h-4" />
               </motion.a>
               <motion.a
-                href="#"
-                whileHover={{ scale: 1.2, y: -3 }}
-                whileTap={{ scale: 0.9 }}
-                className="w-10 h-10 rounded-full bg-white/40 hover:bg-[#D4A574] text-[#5D4A3C] hover:text-white flex items-center justify-center transition-all duration-300 backdrop-blur-sm"
-              >
-                <Facebook className="w-4 h-4" />
-              </motion.a>
-              <motion.a
-                href="#"
+                href="mailto:samtasamara@apps.ipb.ac.id"
                 whileHover={{ scale: 1.2, y: -3 }}
                 whileTap={{ scale: 0.9 }}
                 className="w-10 h-10 rounded-full bg-white/40 hover:bg-[#D4A574] text-[#5D4A3C] hover:text-white flex items-center justify-center transition-all duration-300 backdrop-blur-sm"
@@ -58,7 +62,7 @@ export function Footer() {
                 <Mail className="w-4 h-4" />
               </motion.a>
               <motion.a
-                href="#"
+                href={`tel:${process.env.NOMOR_HP || '6282211511345'}`}
                 whileHover={{ scale: 1.2, y: -3 }}
                 whileTap={{ scale: 0.9 }}
                 className="w-10 h-10 rounded-full bg-white/40 hover:bg-[#D4A574] text-[#5D4A3C] hover:text-white flex items-center justify-center transition-all duration-300 backdrop-blur-sm"
@@ -83,12 +87,12 @@ export function Footer() {
                 {links.map((link, index) => (
                   <motion.li key={index}>
                     <motion.a
-                      href="#"
+                      href={typeof link === 'object' ? link.href : '#'}
                       whileHover={{ x: 5 }}
                       className="text-[#5D4A3C] hover:text-[#8B5A2B] transition-colors inline-block"
                       style={{ fontSize: '0.875rem', lineHeight: '1.5' }}
                     >
-                      {link}
+                      {typeof link === 'object' ? link.name : link}
                     </motion.a>
                   </motion.li>
                 ))}
@@ -107,21 +111,21 @@ export function Footer() {
           <p>© 2025 Nutrimix. Semua hak cipta dilindungi</p>
           <div className="flex gap-6">
             <motion.a 
-              href="#" 
+              href={typeof link === 'object' ? link.href : '#'} 
               whileHover={{ y: -2 }}
               className="hover:text-[#8B5A2B] transition-colors"
             >
               Kebijakan Privasi
             </motion.a>
             <motion.a 
-              href="#" 
+              href={typeof link === 'object' ? link.href : '#'} 
               whileHover={{ y: -2 }}
               className="hover:text-[#8B5A2B] transition-colors"
             >
               Syarat & Ketentuan
             </motion.a>
             <motion.a 
-              href="#" 
+              href={typeof link === 'object' ? link.href : '#'} 
               whileHover={{ y: -2 }}
               className="hover:text-[#8B5A2B] transition-colors"
             >

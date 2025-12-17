@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import DashboardLayout from '@/components/dashboard/layout';
 import { Cart as CartComponent } from '@/components/Cart';
+import CustomCursor from '@/components/CustomCursor';
 
 export default function Cart() {
   const [mounted, setMounted] = useState(false);
@@ -38,8 +39,11 @@ export default function Cart() {
   }
   
   return (
-    <DashboardLayout>
-      <CartComponent />
-    </DashboardLayout>
+    <>
+      <CustomCursor />
+      <DashboardLayout>
+        <CartComponent />
+      </DashboardLayout>
+    </>
   );
 }
