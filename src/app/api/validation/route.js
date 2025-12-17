@@ -219,13 +219,20 @@ export async function GET(req) {
             const now = new Date();
             const expiresAt = new Date(data.expiresAt);
             if (now > expiresAt) return NextResponse.json({ expired: true, verified: false }, { headers: corsHeaders });
-            if (data.status === 'verified') return NextResponse.json({ verified: true, expired: false, userData: data }, { headers: corsHeaders });
+            if (data.status === 'verified') {
+                setTimeout(async () => {
+                    try {
+                        await set(verificationRef, null);
+                    } catch (err) {
+                    }
+                }, 3000);
+                return NextResponse.json({ verified: true, expired: false, userData: data }, { headers: corsHeaders });
+            }
             return NextResponse.json({ verified: false, expired: false, status: 'pending' }, { headers: corsHeaders });
         }
-        
-        return NextResponse.json({ error: "Key is required" }, { status: 400, headers: corsHeaders });
     } catch (error) {
-        return NextResponse.json({ error: "Internal server error" }, { status: 500, headers: corsHeaders });
+        console.error('Error:', error);
+        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500, headers: corsHeaders });
     }
 }
 
