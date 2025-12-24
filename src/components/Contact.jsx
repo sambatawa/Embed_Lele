@@ -442,7 +442,7 @@ export function Contact() {
                 <div className="relative">
                   <div 
                     className="g-recaptcha" 
-                    data-sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || '6LcuZPYrAAAAAL2Jvxtn-N715q8tLVW4FzYAoiUN'}
+                    data-sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY}
                     data-callback="onRecaptchaSuccess"
                     data-expired-callback="onRecaptchaExpired"
                   ></div>
