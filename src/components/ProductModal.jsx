@@ -3,24 +3,15 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Phone, Mail, MapPin, Package, ShoppingBag, CheckCircle } from 'lucide-react';
 import { getAllProducts } from '../lib/firebase';
+import { createOrder, generateOrderId, validateOrderData } from '../lib/order';
+import { Pembeli } from './Pembeli';
 
 export const ProductModal = React.memo(function ProductModal({ isOpen, onClose, productId = null }) {
   const [isProcessing, setIsProcessing] = useState(false);
-  const [showCustomerForm, setShowCustomerForm] = useState(false);
+  const [showCustomerModal, setShowCustomerModal] = useState(false);
   const [products, setProducts] = useState([]);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [customerData, setCustomerData] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    phone: '',
-    address: '',
-    city: '',
-    postalCode: '',
-    country: 'Indonesia'
-  });
-  const [formErrors, setFormErrors] = useState({});
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -71,13 +62,18 @@ export const ProductModal = React.memo(function ProductModal({ isOpen, onClose, 
 
   const defaultOrderingSteps = [
     "Pilih produk yang diinginkan",
-    "Isi formulir pemesanan", 
+    "Klik beli sekarang", 
     "Konfirmasi pembayaran",
-    "Produk dikirim ke alamat"
+    "Produk dikirim ke alamat",
+    "Produk diterima oleh pembeli"
   ];
 
   const handleWhatsApp = () => {
     const phoneNumber = process.env.NOMOR_HP;
+    if (!phoneNumber) {
+      alert('WhatsApp tidak tersedia. Silakan hubungi kami melalui metode lain.');
+      return;
+    }
     const message = encodeURIComponent(
       "Halo Nutrimix,\n\n" +
       "Saya ingin memesan produk dengan detail berikut:\n\n" +
@@ -89,48 +85,84 @@ export const ProductModal = React.memo(function ProductModal({ isOpen, onClose, 
     window.open(`https://wa.me/${phoneNumber}?text=${message}`, '_blank');
   };
 
-  const validateCustomerForm = () => {
-    const errors = {};
-    if (!customerData.firstName) errors.firstName = 'Nama depan wajib diisi';
-    if (!customerData.email) errors.email = 'Email wajib diisi';
-    if (!customerData.phone) errors.phone = 'Nomor telepon wajib diisi';
-    
-    setFormErrors(errors);
-    return Object.keys(errors).length === 0;
+  const handlePaymentClick = () => {
+    setShowCustomerModal(true);
+    document.body.style.overflow = 'hidden';
+    document.body.style.position = 'fixed';
+    document.body.style.width = '100%';
+    document.body.style.top = `-${window.scrollY}px`;
   };
 
-  const handlePayment = async () => {
-    if (!validateCustomerForm()) {
+  const handleCustomerSubmit = async (customerData) => {
+    const scrollY = document.body.style.top;
+    document.body.style.overflow = '';
+    document.body.style.position = '';
+    document.body.style.width = '';
+    document.body.style.top = '';
+    if (scrollY) {
+      window.scrollTo(0, parseInt(scrollY || '0') * -1);
+    }
+    
+    setShowCustomerModal(false);
+    await processPayment(customerData);
+  };
+
+  const processPayment = async (customerData) => {
+    if (!selectedProduct) {
+      alert('Mohon pilih produk terlebih dahulu');
       return;
     }
     
     setIsProcessing(true);
     
     try {
-      const response = await fetch('/api/payments', {
+      const orderId = generateOrderId();
+      
+      const orderData = {
+        orderId,
+        customerDetails: {
+          firstName: customerData.firstName,
+          lastName: customerData.lastName || '',
+          email: customerData.email,
+          phone: customerData.phone,
+          address: customerData.address || '',
+          city: customerData.city || '',
+          postalCode: customerData.postalCode || '',
+          country: 'Indonesia'
+        },
+        itemDetails: {
+          id: selectedProduct?.id || 'PRODUCT',
+          name: selectedProduct?.name || 'Produk',
+          price: selectedProduct?.price || 0,
+          quantity: 1
+        }
+      };
+      
+      const orderResult = await createOrder(orderData);
+      if (!orderResult.success) {
+        throw new Error('Failed to create order: ' + orderResult.error);
+      }
+      
+      const response = await fetch('/api/tokenizer', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          customerDetails: customerData,
-          itemDetails: {
-            id: selectedProduct?.id || 'PRODUCT',
-            name: selectedProduct?.name || 'Produk',
-            price: selectedProduct?.price || 0,
-            quantity: 1
-          }
+          id: orderId,
+          productName: orderData.itemDetails.name,
+          price: orderData.itemDetails.price
         })
       });
       
       const result = await response.json();
       
-      if (!result.success) {
-        throw new Error(result.error || 'Payment processing failed');
+      if (!result.token) {
+        throw new Error('Failed to create payment token');
       }
       
       if (window.snap) {
-        window.snap.pay(result.snapToken, {
+        window.snap.pay(result.token, {
           onSuccess: window.snapCallback.onSuccess,
           onPending: window.snapCallback.onPending,
           onError: window.snapCallback.onError,
@@ -150,30 +182,26 @@ export const ProductModal = React.memo(function ProductModal({ isOpen, onClose, 
   useEffect(() => {
     const script = document.createElement('script');
     script.src = 'https://app.sandbox.midtrans.com/snap/snap.js';
-    script.setAttribute('data-client-key', process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY);
+    script.setAttribute('data-client-key', process.env.MIDTRANS_CLIENT_KEY);
     script.async = true;
     document.body.appendChild(script);
 
     window.snapCallback = {
       onSuccess: function(result) {
-        console.log('Payment success:', result);
         setIsProcessing(false);
-        alert('Pembayaran berhasil! Terima kasih atas pesanan Anda.');
+        alert('Pembayaran berhasil! Kami akan mengkonfirmasi pesanan Anda melalui WhatsApp dan email.');
         onClose();
       },
       onPending: function(result) {
-        console.log('Payment pending:', result);
         setIsProcessing(false);
-        alert('Pembayaran sedang diproses. Silakan lanjutkan pembayaran.');
+        alert('Pembayaran sedang diproses. Kami akan mengkonfirmasi pesanan Anda melalui WhatsApp dan email.');
       },
       onError: function(result) {
-        console.log('Payment error:', result);
         setIsProcessing(false);
-        alert('Pembayaran gagal. Silakan coba lagi.');
+        alert('Pembayaran gagal.');
       },
       onClose: function() {
         setIsProcessing(false);
-        console.log('Customer closed the popup without finishing the payment');
       }
     };
 
@@ -188,190 +216,206 @@ export const ProductModal = React.memo(function ProductModal({ isOpen, onClose, 
   if (!isOpen || loading || !selectedProduct) return null;
 
   return (
-    <AnimatePresence>
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="fixed inset-0 bg-black/40 backdrop-blur-xl z-50 flex items-center justify-center p-4"
-        onClick={onClose}
-      >
+    <>
+      <AnimatePresence>
         <motion.div
-          initial={{ scale: 0.9, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          exit={{ scale: 0.9, opacity: 0 }}
-          className="bg-linear-to-br from-white to-gray-100 backdrop-blur-2xl rounded-t-[50px] max-w-6xl w-full max-h-[90vh] overflow-hidden shadow-2xl border border-gray-200 md:max-h-[90vh] md:overflow-hidden overflow-y-auto"
-          onClick={(e) => e.stopPropagation()}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 bg-black/40 backdrop-blur-xl z-50 flex items-center justify-center p-4"
+          onClick={onClose}
         >
-          <div className="p-6">
-            {products.length > 1 && (
-              <div className="mb-6">
-                <div className="relative">
-                  <button
-                    onClick={() => {
-                      const currentIndex = products.findIndex(p => p.id === selectedProduct?.id);
-                      const newIndex = currentIndex === 0 ? products.length - 1 : currentIndex - 1;
-                      setSelectedProduct(products[newIndex]);
-                    }}
-                    className="absolute left-0 top-1/2 -translate-y-1/2 z-10 p-2 rounded-full bg-white/50 hover:bg-white/70 transition-colors shadow-md"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 17l-5-5m0 0l5-5m-5 5h12" />
-                    </svg>
-                  </button>
-                  <div className="flex items-center justify-center gap-2 px-8">
-                    {products.map((product, index) => (
-                      <button
-                        key={product.id}
-                        onClick={() => setSelectedProduct(product)}
-                        className={`w-2 h-2 rounded-full transition-all ${
-                          selectedProduct?.id === product.id
-                            ? 'bg-[#D4A574] w-8'
-                            : 'bg-gray-300 hover:bg-gray-400'
-                        }`}
-                        aria-label={`Pilih ${product.name}`}
-                      />
-                    ))}
-                  </div>
-                  <button
-                    onClick={() => {
-                      const currentIndex = products.findIndex(p => p.id === selectedProduct?.id);
-                      const newIndex = currentIndex === products.length - 1 ? 0 : currentIndex + 1;
-                      setSelectedProduct(products[newIndex]);
-                    }}
-                    className="absolute right-0 top-1/2 -translate-y-1/2 z-10 p-2 rounded-full bg-white/50 hover:bg-white/70 transition-colors shadow-md"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                    </svg>
-                  </button>
-                </div>
-              </div>
-            )}
-            <div className="grid md:grid-cols-2 gap-8">
-              <div className="space-y-4">
-                <div className="aspect-square bg-linear-to-br from-[#F5E6D3] to-[#E8D4C0] backdrop-blur-sm rounded-2xl overflow-hidden border border-white/30">
-                  <img 
-                    src={selectedProduct.image || '/1.png'} 
-                    alt={selectedProduct.name}
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400' viewBox='0 0 400 400'%3E%3Crect fill='%23F5E6D3' width='400' height='400'/%3E%3Ctext fill='%238B5A2B' font-family='Arial' font-size='20' x='50%25' y='50%25' text-anchor='middle' dy='.3em'%3E${selectedProduct.name || 'Produk'}%3C/text%3E%3C/svg%3E";
-                    }}
-                  />
-                </div>
-                <div className="backdrop-blur-md bg-linear-to-r from-[#D4A574] to-[#C17A4F] text-white p-4 rounded-2xl border border-white/50">
-                  <p className="text-sm opacity-90">Harga</p>
-                  <p className="text-3xl font-bold">{formatCurrency(selectedProduct.price)}</p>
-                </div>
-              </div>
-              <div className="space-y-4">
-                <div>
-                  <div className="mb-2">
-                    <h2 className="text-4xl font-black bg-linear-to-r from-gray-900 via-gray-800 to-gray-700 bg-clip-text text-transparent leading-tight">
-                      {selectedProduct.name}
-                    </h2>
-                    <div className="h-1 w-20 bg-linear-to-r from-[#D4A574] to-[#C17A4F] rounded-full mt-3"></div>
-                  </div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                    <Package className="w-5 h-5 text-[#D4A574]" />
-                    Spesifikasi
-                  </h3>
-                  <div className="overflow-hidden rounded-xl border border-white backdrop-blur-sm">
-                    <table className="w-full">
-                      <tbody>
-                        {selectedProduct.spesifikasi ? (
-                          selectedProduct.spesifikasi.split(',').map((spec, index) => {
-                            const [label, value] = spec.trim().split(':');
-                            return (
-                              <tr key={index} className="border-b border-white/10 last:border-b-0">
-                                <td className="px-4 py-3 text-sm font-medium text-gray-900 bg-linear-to-r from-[#F5E6D3] to-[#E8D4C0] w-2/5">
-                                  {label?.trim() || ''}
-                                </td>
-                                <td className="px-4 py-3 text-sm text-gray-600 bg-linear-to-r from-[#F0DCC8] to-[#E8D4C0] w-3/5">
-                                  {value?.trim() || ''}
-                                </td>
-                              </tr>
-                            );
-                          })
-                        ) : (
-                          <tr>
-                            <td colSpan="2" className="px-4 py-3 text-sm text-gray-500 text-center">
-                              Tidak ada spesifikasi tersedia
-                            </td>
-                          </tr>
-                        )}
-                      </tbody>
-                    </table>
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.9, opacity: 0 }}
+            className="bg-linear-to-br from-white to-gray-100 backdrop-blur-2xl rounded-t-[50px] max-w-6xl w-full max-h-[90vh] overflow-hidden shadow-2xl border border-gray-200 md:max-h-[90vh] md:overflow-hidden overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="p-6">
+              {products.length > 1 && (
+                <div className="mb-6">
+                  <div className="relative">
+                    <button
+                      onClick={() => {
+                        const currentIndex = products.findIndex(p => p.id === selectedProduct?.id);
+                        const newIndex = currentIndex === 0 ? products.length - 1 : currentIndex - 1;
+                        setSelectedProduct(products[newIndex]);
+                      }}
+                      className="absolute left-0 top-1/2 -translate-y-1/2 z-10 p-2 rounded-full bg-white/50 hover:bg-white/70 transition-colors shadow-md"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 17l-5-5m0 0l5-5m-5 5h12" />
+                      </svg>
+                    </button>
+                    <div className="flex items-center justify-center gap-2 px-8">
+                      {products.map((product, index) => (
+                        <button
+                          key={product.id}
+                          onClick={() => setSelectedProduct(product)}
+                          className={`w-2 h-2 rounded-full transition-all ${
+                            selectedProduct?.id === product.id
+                              ? 'bg-[#D4A574] w-8'
+                              : 'bg-gray-300 hover:bg-gray-400'
+                          }`}
+                          aria-label={`Pilih ${product.name}`}
+                        />
+                      ))}
+                    </div>
+                    <button
+                      onClick={() => {
+                        const currentIndex = products.findIndex(p => p.id === selectedProduct?.id);
+                        const newIndex = currentIndex === products.length - 1 ? 0 : currentIndex + 1;
+                        setSelectedProduct(products[newIndex]);
+                      }}
+                      className="absolute right-0 top-1/2 -translate-y-1/2 z-10 p-2 rounded-full bg-white/50 hover:bg-white/70 transition-colors shadow-md"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                      </svg>
+                    </button>
                   </div>
                 </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2 flex items-center gap-2">
-                    <ShoppingBag className="w-5 h-5 text-[#D4A574]" />
-                    Cara Pemesanan
-                  </h3>
-                  <ol className="space-y-2">
-                    {defaultOrderingSteps.map((step, index) => (
-                      <li key={index} className="flex items-start gap-3">
-                        <span className="w-6 h-6 bg-[#D4A574] text-white rounded-full flex items-center justify-center text-sm font-medium shrink-0">
-                          {index + 1}
-                        </span>
-                        <span className="text-gray-600">{step}</span>
-                      </li>
-                    ))}
-                  </ol>
+              )}
+              <div className="grid md:grid-cols-2 gap-8">
+                <div className="space-y-4">
+                  <div className="aspect-square bg-linear-to-br from-[#F5E6D3] to-[#E8D4C0] backdrop-blur-sm rounded-2xl overflow-hidden border border-white/30">
+                    <img 
+                      src={selectedProduct.image || '/1.png'} 
+                      alt={selectedProduct.name}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400' viewBox='0 0 400 400'%3E%3Crect fill='%23F5E6D3' width='400' height='400'/%3E%3Ctext fill='%238B5A2B' font-family='Arial' font-size='20' x='50%25' y='50%25' text-anchor='middle' dy='.3em'%3E${selectedProduct.name || 'Produk'}%3C/text%3E%3C/svg%3E";
+                      }}
+                    />
+                  </div>
+                  <div className="backdrop-blur-md bg-linear-to-r from-[#D4A574] to-[#C17A4F] text-white p-4 rounded-2xl border border-white/50">
+                    <p className="text-sm opacity-90">Harga</p>
+                    <p className="text-3xl font-bold">{formatCurrency(selectedProduct.price)}</p>
+                  </div>
                 </div>
-                <div>
-                  <div className="bg-white/30 rounded-full p-6 border border-white/20 shadow-xl">
-                    <div className="flex gap-3">
-                      <motion.button
-                        whileHover={{ scale: 1.05, y: -2 }}
-                        whileTap={{ scale: 0.95 }}
-                        onClick={handleWhatsApp}
-                        className="flex-1 bg-linear-to-r from-[#C17A4F] to-[#B8734A] border-l-2 hover:from-[#B8734A] hover:to-[#9B6540] text-white px-2 py-4 rounded-l-full font-semibold transition-all duration-300 flex items-center justify-center gap-3 shadow-lg hover:shadow-xl group"
-                      >
-                        <div className="w-5 h-5 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
-                          <Phone className="w-3 h-3" />
-                        </div>
-                        <span className="max-w-0 overflow-hidden whitespace-nowrap transition-all duration-300 group-hover:max-w-xs">Hubungi WhatsApp</span>
-                      </motion.button>
-                      <motion.button
-                        whileHover={{ scale: 1.05, y: -2 }}
-                        whileTap={{ scale: 0.95 }}
-                        onClick={handlePayment}
-                        disabled={isProcessing}
-                        className="flex-1 bg-linear-to-r from-[#D4A574] to-[#C17A4F] border-r-2 hover:from-[#C17A4F] hover:to-[#B8734A] text-white px-2 py-4 rounded-r-full font-semibold transition-all duration-300 flex items-center justify-center gap-3 shadow-lg hover:shadow-xl group"
-                      >
-                        <div className="w-5 h-5 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
-                          <ShoppingBag className="w-3 h-3" />
-                        </div>
-                        <span className="max-w-0 overflow-hidden whitespace-nowrap transition-all duration-300 group-hover:max-w-xs">{isProcessing ? 'Memproses...' : 'Bayar Sekarang'}</span>
-                      </motion.button>
+                <div className="space-y-4">
+                  <div>
+                    <div className="mb-2">
+                      <h2 className="text-4xl font-black bg-linear-to-r from-gray-900 via-gray-800 to-gray-700 bg-clip-text text-transparent leading-tight">
+                        {selectedProduct.name}
+                      </h2>
+                      <div className="h-1 w-20 bg-linear-to-r from-[#D4A574] to-[#C17A4F] rounded-full mt-3"></div>
+                    </div>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                      <Package className="w-5 h-5 text-[#D4A574]" />
+                      Spesifikasi
+                    </h3>
+                    <div className="overflow-hidden rounded-xl border border-white backdrop-blur-sm">
+                      <table className="w-full">
+                        <tbody>
+                          {selectedProduct.spesifikasi ? (
+                            selectedProduct.spesifikasi.split(',').map((spec, index) => {
+                              const [label, value] = spec.trim().split(':');
+                              return (
+                                <tr key={index} className="border-b border-white/10 last:border-b-0">
+                                  <td className="px-4 py-3 text-sm font-medium text-gray-900 bg-linear-to-r from-[#F5E6D3] to-[#E8D4C0] w-2/5">
+                                    {label?.trim() || ''}
+                                  </td>
+                                  <td className="px-4 py-3 text-sm text-gray-600 bg-linear-to-r from-[#F0DCC8] to-[#E8D4C0] w-3/5">
+                                    {value?.trim() || ''}
+                                  </td>
+                                </tr>
+                              );
+                            })
+                          ) : (
+                            <tr>
+                              <td colSpan="2" className="px-4 py-3 text-sm text-gray-500 text-center">
+                                Tidak ada spesifikasi tersedia
+                              </td>
+                            </tr>
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2 flex items-center gap-2">
+                      <ShoppingBag className="w-5 h-5 text-[#D4A574]" />
+                      Cara Pemesanan
+                    </h3>
+                    <ol className="space-y-2">
+                      {defaultOrderingSteps.map((step, index) => (
+                        <li key={index} className="flex items-start gap-3">
+                          <span className="w-6 h-6 bg-[#D4A574] text-white rounded-full flex items-center justify-center text-sm font-medium shrink-0">
+                            {index + 1}
+                          </span>
+                          <span className="text-gray-600">{step}</span>
+                        </li>
+                      ))}
+                    </ol>
+                  </div>
+                  <div>
+                    <div className="bg-white/30 rounded-full p-6 border border-white/20 shadow-xl">
+                      <div className="flex gap-3">
+                        <motion.button
+                          whileHover={{ scale: 1.05, y: -2 }}
+                          whileTap={{ scale: 0.95 }}
+                          onClick={handleWhatsApp}
+                          className="flex-1 bg-linear-to-r from-[#C17A4F] to-[#B8734A] border-l-2 hover:from-[#B8734A] hover:to-[#9B6540] text-white px-2 py-4 rounded-l-full font-semibold transition-all duration-300 flex items-center justify-center gap-3 shadow-lg hover:shadow-xl group"
+                        >
+                          <div className="w-5 h-5 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
+                            <Phone className="w-3 h-3" />
+                          </div>
+                          <span className="max-w-0 overflow-hidden whitespace-nowrap transition-all duration-300 group-hover:max-w-xs">Hubungi WhatsApp</span>
+                        </motion.button>
+                        <motion.button
+                          whileHover={{ scale: 1.05, y: -2 }}
+                          whileTap={{ scale: 0.95 }}
+                          onClick={handlePaymentClick}
+                          disabled={isProcessing}
+                          className="flex-1 bg-linear-to-r from-[#D4A574] to-[#C17A4F] border-r-2 hover:from-[#C17A4F] hover:to-[#B8734A] text-white px-2 py-4 rounded-r-full font-semibold transition-all duration-300 flex items-center justify-center gap-3 shadow-lg hover:shadow-xl group"
+                        >
+                          <div className="w-5 h-5 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
+                            <ShoppingBag className="w-3 h-3" />
+                          </div>
+                          <span className="max-w-0 overflow-hidden whitespace-nowrap transition-all duration-300 group-hover:max-w-xs">{isProcessing ? 'Memproses...' : 'Bayar Sekarang'}</span>
+                        </motion.button>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
-
-          <AnimatePresence>
-            {showCustomerForm && (
-              <motion.div
-                initial={{ opacity: 0, y: 50 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 50 }}
-                className="fixed bottom-8 right-8 bg-linear-to-r from-[#F59E0B] to-[#D97706] text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-3 z-50"
-              >
-                <CheckCircle className="w-6 h-6" />
-                <div>
-                  <p className="font-semibold">Berhasil ditambahkan!</p>
-                  <p className="text-sm opacity-90">{selectedProduct.name} telah ditambahkan ke keranjang</p>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+          </motion.div>
         </motion.div>
-      </motion.div>
-    </AnimatePresence>
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showCustomerModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md"
+            onClick={() => setShowCustomerModal(false)}
+          >
+            <motion.div
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 200 }}
+              className="bg-white rounded-[40px] w-full max-w-lg max-h-[85vh] overflow-hidden shadow-2xl flex flex-col"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="p-6 border-b flex items-center justify-between">
+                <h2 className="text-xl font-bold">Data Pembeli</h2>
+                <button onClick={() => setShowCustomerModal(false)} className="p-2 hover:bg-gray-100 rounded-full">
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+              <div className="p-6 overflow-y-auto">
+                <Pembeli onSubmit={handleCustomerSubmit} />
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
   );
 });

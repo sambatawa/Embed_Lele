@@ -6,7 +6,7 @@ export function About() {
   return (
     <section id="about" className="py-20 px-6 bg-linear-to-br from-[#F5E6D3] to-[#E8D4C0]">
       <div className="max-w-[1400px] mx-auto">
-        <div className="grid lg:grid-cols-2 gap-16 items-center">
+        <div className="grid lg:grid-cols-2 gap-3 lg:gap-16 items-center">
           <motion.div
             initial={{ opacity: 0, x: -50 }}
             whileInView={{ opacity: 1, x: 0 }}
