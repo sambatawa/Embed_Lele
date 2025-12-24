@@ -62,10 +62,11 @@ export function Footer() {
                 <Mail className="w-4 h-4" />
               </motion.a>
               <motion.a
-                href={`tel:${process.env.NOMOR_HP}`}
+                href={process.env.NOMOR_HP ? `tel:${process.env.NOMOR_HP}` : '#'}
                 whileHover={{ scale: 1.2, y: -3 }}
                 whileTap={{ scale: 0.9 }}
                 className="w-10 h-10 rounded-full bg-white/40 hover:bg-[#D4A574] text-[#5D4A3C] hover:text-white flex items-center justify-center transition-all duration-300 backdrop-blur-sm"
+                aria-label="Phone"
               >
                 <Phone className="w-4 h-4" />
               </motion.a>
