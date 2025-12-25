@@ -12,8 +12,6 @@ import { Members } from '../components/Members.jsx';
 import { Contact } from '../components/Contact.jsx';
 import { Ajakan } from '../components/Ajakan.jsx';
 import { Footer } from '../components/Footer.jsx';
-import { LoginPage } from '../components/Login.jsx';
-import { RegisterPage } from '../components/Register.jsx';
 import CustomCursor from '../components/CustomCursor.jsx';
 import "./globals.css";
 

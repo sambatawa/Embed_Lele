@@ -1,8 +1,8 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Plus, Search, Filter, Edit, Trash2, User, Mail, Phone, Calendar, MapPin, Shield, Eye, EyeOff } from 'lucide-react';
-import { db, ref, get, set, update, remove } from '../../lib/firebase';
+import { Search, Trash2, Eye} from 'lucide-react';
+import { db, ref, get, set } from '../../lib/firebase';
 
 export default function ManageUser() {
   const [users, setUsers] = useState([]);
@@ -65,7 +65,7 @@ export default function ManageUser() {
     if (window.confirm('Apakah Anda yakin ingin menghapus pengguna ini?')) {
       try {
         const userRef = ref(db, `users/${userId}`);
-        await remove(userRef);
+        await set(userRef, null);
         setUsers(users.filter(user => user.id !== userId));
       } catch (error) {
         console.error('Error deleting user:', error);

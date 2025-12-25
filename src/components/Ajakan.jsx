@@ -1,11 +1,11 @@
 'use client';
 
-import React from 'react';
+import React, { Suspense } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowRight, ShoppingCart, User, Package } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
-export function Ajakan() {
+function AjakanContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -24,14 +24,14 @@ export function Ajakan() {
         }}
       />
       <div className="absolute inset-0 bg-linear-to-br from-[#f5f0ebc0] via-[#f8f4efa1] to-[#faf6f1c5]" />
-      <div className="max-w-[1400px] mx-auto relative">
+      <div className="max-w-[1400px] mx-auto relative z-10">
 
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ delay: 0.7, duration: 0.8 }}
-          className="text-center max-w-4xl mx-auto relative z-10"
+          className="text-center max-w-4xl mx-auto"
         >
           <motion.h3
             initial={{ opacity: 0, y: 20 }}
@@ -81,5 +81,28 @@ export function Ajakan() {
         </motion.div>
       </div>
     </section>
+  );
+}
+
+export function Ajakan() {
+  return (
+    <Suspense fallback={
+      <section id="ajakan" className="py-20 px-6 relative overflow-hidden">
+        <div className="max-w-[1400px] mx-auto">
+          <div className="text-center max-w-4xl mx-auto">
+            <div className="animate-pulse">
+              <div className="h-8 bg-gray-200 rounded mb-4"></div>
+              <div className="h-4 bg-gray-200 rounded mb-8"></div>
+              <div className="flex gap-4 justify-center">
+                <div className="h-12 w-40 bg-gray-200 rounded-full"></div>
+                <div className="h-12 w-40 bg-gray-200 rounded-full"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    }>
+      <AjakanContent />
+    </Suspense>
   );
 }
