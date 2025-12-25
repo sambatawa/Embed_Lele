@@ -18,7 +18,7 @@ function AjakanContent() {
       <div 
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
         style={{
-          backgroundImage: 'url(/5.JPG)',
+          backgroundImage: 'url(/2.png)',
           filter: 'blur(8px)',
           transform: 'scale(1.1)'
         }}

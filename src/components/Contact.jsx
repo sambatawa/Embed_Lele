@@ -156,7 +156,7 @@ export function Contact() {
           </motion.p>
         </motion.div>
 
-        <div className="grid lg:grid-cols-2 gap-12 ">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 ">
           <motion.div
             initial={{ opacity: 0, x: -50 }}
             whileInView={{ opacity: 1, x: 0 }}
@@ -184,12 +184,12 @@ export function Contact() {
                 className="group"
               >
                 <div className="flex items-start gap-4 p-6 rounded-l-full rounded-tr-full bg-white/60 backdrop-blur-sm border border-[#D4A574]/15">
-                  <motion.div className="w-12 h-12 bg-linear-to-br from-[#D4A574] to-[#C17A4F] rounded-l-full rounded-t-full flex items-center justify-center shrink-0 shadow-md">
-                    <Mail className="w-6 h-6 text-white" />
+                  <motion.div className="w-6 h-6 lg:w-12 lg:h-12 bg-linear-to-br from-[#D4A574] to-[#C17A4F] rounded-l-full rounded-t-full flex items-center justify-center shrink-0 shadow-md">
+                    <Mail className="w-3 h-3 lg:w-6 lg:h-6 text-white" />
                   </motion.div>
                   <div className="flex-1">
                     <h4 className="font-bold text-gray-800 mb-2 text-base">Email</h4>
-                    <p className="text-gray-700">samtasamara@apps.ipb.ac.id</p>
+                    <p className="text-gray-700 text-sm lg:text-md">inassaqia@gmail.com</p>
                   </div>
                 </div>
               </motion.div>
@@ -203,13 +203,13 @@ export function Contact() {
               >
                 <div className="flex items-start gap-4 p-6 rounded-l-full rounded-br-full bg-white/60 backdrop-blur-sm border border-[#D4A574]/15">
                   <motion.div 
-                    className="w-12 h-12 bg-linear-to-br from-[#D4A574] to-[#C17A4F] rounded-l-full flex items-center justify-center shrink-0 shadow-md"
+                    className="w-6 h-6 lg:w-12 lg:h-12 bg-linear-to-br from-[#D4A574] to-[#C17A4F] rounded-l-full flex items-center justify-center shrink-0 shadow-md"
                   >
-                    <Phone className="w-6 h-6 text-white" />
+                    <Phone className="w-3 h-3 lg:w-6 lg:h-6 text-white" />
                   </motion.div>
                   <div className="flex-1">
                     <h4 className="font-bold text-gray-800 mb-2 text-base">Telepon</h4>
-                    <p className="text-gray-700">+628-22...</p>
+                    <p className="text-gray-700 text-sm lg:text-md">+628-22...</p>
                   </div>
                 </div>
               </motion.div>
@@ -221,15 +221,15 @@ export function Contact() {
                 transition={{ delay: 0.3 }}
                 className="group"
               >
-                <div className="flex items-start gap-4 p-6 rounded-r-full rounded-tl-full bg-white/60 backdrop-blur-sm border border-[#D4A574]/15">
+                <div className="flex items-start gap-4 p-6 rounded-r-4xl lg:rounded-r-full rounded-tl-4xl lg:rounded-tl-full bg-white/60 backdrop-blur-sm border border-[#D4A574]/15">
                   <motion.div 
-                    className="w-12 h-12 bg-linear-to-br from-[#D4A574] to-[#C17A4F] rounded-t-full rounded-r-full flex items-center justify-center shrink-0 shadow-md"
+                    className="w-6 h-6 lg:w-12 lg:h-12 bg-linear-to-br from-[#D4A574] to-[#C17A4F] rounded-t-full rounded-r-full flex items-center justify-center shrink-0 shadow-md"
                   >
-                    <MapPin className="w-6 h-6 text-white" />
+                    <MapPin className="w-3 h-3 lg:w-6 lg:h-6 text-white" />
                   </motion.div>
                   <div className="flex-1">
                     <h4 className="font-bold text-gray-800 mb-2 text-base">Alamat</h4>
-                    <p className="text-gray-700 font-medium">Sekolah Vokasi IPB</p>
+                    <p className="text-gray-700 font-medium text-sm lg:text-md">Sekolah Vokasi IPB</p>
                     <p className="text-gray-600 text-sm leading-relaxed mt-1">Jl. Kumbang No.14, RT.02/RW.06, Babakan, Kecamatan Bogor Tengah</p>
                     <p className="text-gray-600 text-sm">Kota Bogor, Jawa Barat 16128</p>
                   </div>
@@ -245,13 +245,13 @@ export function Contact() {
               >
                 <div className="flex items-start gap-4 p-6 rounded-r-full rounded-bl-full bg-white/60 backdrop-blur-sm border border-[#D4A574]/15">
                   <motion.div 
-                    className="w-12 h-12 bg-linear-to-br from-[#D4A574] to-[#C17A4F] rounded-b-full flex items-center justify-center shrink-0 shadow-md"
+                    className="w-6 h-6 lg:w-12 lg:h-12 bg-linear-to-br from-[#D4A574] to-[#C17A4F] rounded-b-full flex items-center justify-center shrink-0 shadow-md"
                   >
-                    <Clock className="w-6 h-6 text-white" />
+                    <Clock className="w-3 h-3 lg:w-6 lg:h-6 text-white" />
                   </motion.div>
                   <div className="flex-1">
                     <h4 className="font-bold text-gray-900 mb-2 text-base">Jam Operasional</h4>
-                    <p className="text-gray-700">Minggu: 09:00 - 18:00</p>             
+                    <p className="text-gray-700 text-sm lg:text-md">Minggu: 09:00 - 18:00</p>             
                   </div>
                 </div>
               </motion.div>
